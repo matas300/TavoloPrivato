@@ -1,0 +1,59 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="chat-layout">
+        <div class="chat-sidebar">
+          <% partners.forEach(p => { %>
+            <a href="/cameriere/messaggi?con=<%= p.id %>" class="chat-contact <%= activePartnerId === p.id ? 'active' : '' %>">
+              <div class="avatar avatar-sm <%= p.role === 'ristorante' ? 'avatar-olive' : '' %>"><%= p.initials %></div>
+              <div style="min-width:0;flex:1">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><%= p.name %></span>
+                  <% if (p.unreadCount > 0) { %><span class="badge-count"><%= p.unreadCount %></span><% } %>
+                </div>
+                <div class="text-tiny text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><%= p.lastMessage ? p.lastMessage.text.substring(0, 35) + '...' : '' %></div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+
+        <div class="chat-main">
+          <% if (partner) { %>
+            <div style="padding:var(--space-md);border-bottom:1px solid var(--border-light)">
+              <div class="flex items-center gap-sm">
+                <div class="avatar avatar-sm <%= partner.role === 'ristorante' ? 'avatar-olive' : '' %>"><%= partner.initials %></div>
+                <span class="font-semibold"><%= partner.name %></span>
+              </div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+              <% conversation.forEach(m => { %>
+                <div class="msg <%= m.from === currentUser.id ? 'msg-sent' : 'msg-received' %>">
+                  <div>
+                    <div class="msg-bubble"><%= m.text %></div>
+                    <div class="msg-time <%= m.from === currentUser.id ? 'text-right' : '' %>"><%= m.time.split(' ')[1] %></div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+            <div class="chat-input-area">
+              <form class="flex gap-sm" onsubmit="sendMessage(event, <%= partner.id %>)">
+                <input class="form-input" placeholder="Scrivi un messaggio..." id="msg-input" autocomplete="off">
+                <button type="submit" class="btn btn-primary"><i data-lucide="send" style="width:16px;height:16px"></i></button>
+              </form>
+            </div>
+          <% } else { %>
+            <div class="flex items-center justify-center" style="height:100%;color:var(--text-tertiary)">
+              <p>Seleziona una conversazione</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

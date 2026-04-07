@@ -1,0 +1,141 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="grid-4 mb-xl">
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= totalSpend.toLocaleString('it-IT') %></div>
+          <div class="stat-label">Spesa chiusa</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= totalComm.toLocaleString('it-IT') %></div>
+          <div class="stat-label">Fee piattaforma</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= avgSpend.toLocaleString('it-IT') %></div>
+          <div class="stat-label">Costo medio per prestazione</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= payments.length %></div>
+          <div class="stat-label">Prestazioni chiuse</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-xl">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Come leggere lo split</h3>
+            <div class="note-list">
+              <div class="surface-muted">Il locale vede un solo costo totale per prestazione.</div>
+              <div class="surface-muted">Il backend divide automaticamente l importo tra netto worker e service fee.</div>
+              <div class="surface-muted">Questo framing rafforza il modello di servizio acquistato, non di lavoro a ore.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Mix di spesa</h3>
+            <div class="chart-container"><canvas id="payment-chart"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="card-body">
+          <div class="flex justify-between items-start gap-lg flex-wrap">
+            <div style="max-width:760px">
+              <span class="eyebrow mb-sm">Billing mensile</span>
+              <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Per contratti lunghi gestisci milestone, scadenze e PDF da una vista dedicata.</h3>
+              <p class="text-sm text-muted mt-sm">Se devi dilazionare il corrispettivo su piu mesi, entra in <strong>Contratti Lunghi</strong>: li trovi termini 0/15/30/45 giorni, piano mensile e documento contrattuale.</p>
+            </div>
+            <a class="btn btn-outline" href="/ristorante/contratti-lunghi">Apri contratti lunghi</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="card-body">
+          <div class="flex justify-between items-start gap-lg flex-wrap mb-lg">
+            <div style="max-width:760px">
+              <span class="eyebrow mb-sm">Invoice milestone</span>
+              <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Anche le fatture dei contratti lunghi sono esposte qui.</h3>
+              <p class="text-sm text-muted mt-sm">Questa tabella rende visibili numero invoice, milestone, importo, scadenza e stato di pagamento dei contratti estesi.</p>
+            </div>
+            <a class="btn btn-outline btn-sm" href="/ristorante/contratti-lunghi">Gestisci contratti lunghi</a>
+          </div>
+
+          <% if (!longInvoices.length) { %>
+            <div class="surface-muted">
+              <p class="text-sm text-muted">Non ci sono ancora invoice milestone nel seed attuale. Appena parte il billing mensile, le trovi qui.</p>
+            </div>
+          <% } else { %>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Numero</th><th>Worker</th><th>Milestone</th><th>Emissione</th><th>Scadenza</th><th>Importo</th><th>Stato</th></tr></thead>
+                <tbody>
+                  <% longInvoices.forEach(item => { %>
+                    <tr>
+                      <td><%= item.number %></td>
+                      <td><%= item.workerName %></td>
+                      <td><%= item.milestoneLabel %></td>
+                      <td><%= item.issuedAt ? new Date(item.issuedAt).toLocaleDateString('it-IT') : 'n/d' %></td>
+                      <td><%= item.dueDate ? new Date(item.dueDate).toLocaleDateString('it-IT') : 'n/d' %></td>
+                      <td>EUR <%= item.amountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                      <td><span class="badge <%= item.invoiceStatus === 'paid' ? 'badge-olive' : item.invoiceStatus === 'open' || item.invoiceStatus === 'draft' ? 'badge-terracotta' : 'badge-neutral' %>"><%= item.invoiceStatus %></span></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Storico prestazioni pagate</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Data</th><th>Worker</th><th>Pacchetto</th><th>Netto worker</th><th>Fee</th><th>Totale</th><th>Pair risk</th></tr></thead>
+          <tbody>
+            <% payments.forEach(item => { %>
+              <tr>
+                <td><%= item.contratto.data %></td>
+                <td><div class="flex items-center gap-sm"><div class="avatar avatar-sm"><%= item.cameriere.initials %></div> <%= item.cameriere.name %></div></td>
+                <td><%= item.package ? item.package.name : item.contratto.tipo %></td>
+                <td class="font-semibold stat-positive">EUR <%= item.workerNet %></td>
+                <td>EUR <%= item.contratto.commissione %></td>
+                <td class="font-semibold">EUR <%= item.totalCost %></td>
+                <td><span class="badge <%= item.complianceUi.badge %>"><%= item.complianceUi.label %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const ctx = document.getElementById('payment-chart');
+  if (!ctx) return;
+  const data = <%- JSON.stringify(
+    payments.map(item => ({
+      name: item.cameriere.name,
+      total: item.totalCost
+    }))
+  ) %>;
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: data.map(d => d.name),
+      datasets: [{ data: data.map(d => d.total), backgroundColor: ['#C25B2A','#5A7A3A','#D4783F','#6E9448','#A04A1F'], borderWidth: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+  });
+});
+</script>
+<%- include('../../partials/foot') %>

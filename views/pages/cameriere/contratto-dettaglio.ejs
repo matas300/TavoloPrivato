@@ -1,0 +1,142 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up" style="max-width:960px">
+
+      <a href="/cameriere/contratti" class="btn btn-ghost btn-sm mb-lg"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Torna ai contratti</a>
+
+      <section class="hero-panel mb-xl">
+        <span class="eyebrow mb-md">Service contract</span>
+        <h1 class="font-display font-bold mb-sm" style="font-size:var(--fs-h1)">Prestazione #<%= contratto.id %></h1>
+        <p class="page-lead">Accordo demo tra <strong><%= ristorante.name %></strong> e <strong><%= cameriere.name %></strong> per una prestazione autonoma a risultato, gestita su TavoloLibero con split payment e monitoraggio compliance.</p>
+      </section>
+
+      <div class="grid-2 mb-xl">
+        <div class="card">
+          <div class="card-body">
+            <div class="flex items-center gap-sm mb-md">
+              <span class="badge badge-neutral"><%= contratto.tipo %></span>
+              <span class="badge <%= complianceUi.badge %>"><%= complianceUi.label %></span>
+            </div>
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Oggetto della prestazione</h3>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Data servizio</span>
+                <strong><%= contratto.data %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Pacchetto</span>
+                <strong><%= package ? package.name : 'Prestazione di servizio' %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Risultato atteso</span>
+                <strong><%= package ? package.resultLabel : 'Presidio operativo del servizio' %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Locale</span>
+                <strong><%= ristorante.name %> | <%= ristorante.zona %></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Split payment</h3>
+            <div class="split-bar mb-sm">
+              <div class="split-bar-worker" style="width:<%= splitPercent.worker %>%"></div>
+              <div class="split-bar-platform" style="width:<%= splitPercent.platform %>%"></div>
+            </div>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Netto professionista</span>
+                <strong style="color:var(--olive)">EUR <%= workerNet %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Service fee piattaforma</span>
+                <strong>EUR <%= contratto.commissione %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Costo totale ristorante</span>
+                <strong>EUR <%= totalCost %></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="card-body">
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Clausole demo e guardrail</h3>
+          <div class="note-list">
+            <div class="surface-muted">La prestazione e descritta come esito di servizio e gestione ospiti, non come monte ore da presidiare.</div>
+            <div class="surface-muted">Il motore compliance monitora continuita, concentrazione del fatturato ed eventuale rischio di etero-organizzazione sul pair worker-ristorante.</div>
+            <div class="surface-muted">Ogni nuovo servizio puo essere bloccato o mandato in review se il pair supera i guardrail interni della piattaforma.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-xl">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Pair compliance</h3>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Giorni 24 mesi</span>
+                <strong><%= compliance.days24m %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Revenue share</span>
+                <strong><%= Math.round(compliance.share24m * 100) %>%</strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Control score</span>
+                <strong><%= compliance.controlScore %></strong>
+              </div>
+            </div>
+            <div class="note-list mt-md">
+              <% compliance.notes.forEach(note => { %>
+                <div class="surface-muted"><%= note %></div>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Firma</h3>
+            <div class="detail-list mb-md">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Ristorante</span>
+                <strong><%= contratto.stato !== 'confermato' ? 'firmato' : 'in attesa' %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Professionista</span>
+                <strong><%= contratto.stato !== 'confermato' ? 'firmato' : 'in attesa' %></strong>
+              </div>
+            </div>
+
+            <% if (contratto.stato === 'confermato') { %>
+              <label class="form-checkbox mb-md">
+                <input type="checkbox" id="sign-check"> Confermo il testo demo della prestazione e i guardrail di piattaforma
+              </label>
+              <button class="btn btn-primary" onclick="firmaContratto(<%= contratto.id %>)">Firma contratto</button>
+            <% } else { %>
+              <div class="surface-muted">
+                <p class="text-sm text-muted">Contratto gia firmato in demo. Puoi solo scaricare il PDF riepilogativo.</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-md">
+        <button class="btn btn-ghost" onclick="showToast('PDF riepilogativo generato in demo')"><i data-lucide="download" style="width:16px;height:16px"></i> Scarica PDF</button>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

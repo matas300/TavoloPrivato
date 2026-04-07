@@ -1,0 +1,11 @@
+<%
+const r = typeof rating !== 'undefined' ? rating : 0;
+const filledStars = Math.round(r);
+
+for (let i = 1; i <= 5; i++) {
+  const style = i <= filledStars
+    ? 'fill:var(--terracotta);color:var(--terracotta)'
+    : 'color:var(--border-color)';
+%>
+<i data-lucide="star" style="width:14px;height:14px;<%= style %>"></i>
+<% } %>

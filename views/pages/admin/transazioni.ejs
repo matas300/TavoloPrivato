@@ -1,0 +1,34 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Data</th><th>Cameriere</th><th>Ristorante</th><th>Tipo</th><th>Compenso</th><th>Comm.</th><th>Totale</th><th>Stato</th></tr></thead>
+          <tbody>
+            <% contratti.forEach(c => { const cam = getUser(c.cameriereId); const rist = getUser(c.ristoranteId); %>
+              <tr>
+                <td>#<%= c.id %></td>
+                <td><%= c.data %></td>
+                <td><%= cam.name %></td>
+                <td><%= rist.name %></td>
+                <td><span class="badge badge-neutral"><%= c.tipo %></span></td>
+                <td>&euro;<%= c.compensoCam %></td>
+                <td>&euro;<%= c.commissione %></td>
+                <td class="font-semibold">&euro;<%= c.compensoCam + c.commissione %></td>
+                <td>
+                  <% if (['pagato','completato'].includes(c.stato)) { %><span class="badge badge-olive"><%= c.stato %></span>
+                  <% } else if (c.stato === 'confermato') { %><span class="badge badge-terracotta">confermato</span>
+                  <% } else { %><span class="badge badge-neutral"><%= c.stato %></span><% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

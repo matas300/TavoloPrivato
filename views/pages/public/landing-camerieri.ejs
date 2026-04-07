@@ -1,0 +1,86 @@
+<%- include('../../partials/head') %>
+<%- include('../../partials/pub-nav') %>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="grid-2" style="align-items:center">
+      <div>
+        <p class="section-label">Per camerieri freelance</p>
+        <h1>Smetti di essere <em>sottopagato.</em><br>Guadagna quello che meriti.</h1>
+        <p class="hero-subtitle">Come dipendente guadagni ~1.500&euro;/mese. Con la P.IVA forfettaria arrivi a ~2.500&euro;. TavoloLibero ti connette con i ristoranti, gestisce i contratti e ti lascia la libert&agrave;.</p>
+        <div class="flex gap-md flex-wrap">
+          <a href="/register" class="btn btn-primary btn-lg">Registrati Gratis</a>
+          <a href="/simulatore-guadagno" class="btn btn-outline btn-lg">Apri il Simulatore</a>
+        </div>
+        <div class="flex gap-lg mt-xl flex-wrap">
+          <div>
+            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:700;color:var(--terracotta)">+67%</div>
+            <div class="text-sm text-muted">Guadagno in pi&ugrave;</div>
+          </div>
+          <div>
+            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:700;color:var(--olive)">850+</div>
+            <div class="text-sm text-muted">Camerieri attivi</div>
+          </div>
+          <div>
+            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:700;color:var(--terracotta)">15 min</div>
+            <div class="text-sm text-muted">Per aprire la P.IVA</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="calc-box" id="calculator">
+          <h3 class="font-display" style="font-size:var(--fs-h3);margin-bottom:var(--space-sm)">Quanto potresti guadagnare?</h3>
+          <p class="text-sm text-muted mb-lg">Inserisci il tuo stipendio netto attuale come dipendente.</p>
+          <div class="form-group">
+            <label class="form-label">Stipendio netto mensile (&euro;)</label>
+            <input class="form-input" type="number" id="calc-stipendio" value="1500" min="0">
+          </div>
+          <div class="flex gap-md mb-md">
+            <label class="form-checkbox"><input type="radio" name="calc-aliq" value="15" checked> 15% (standard)</label>
+            <label class="form-checkbox"><input type="radio" name="calc-aliq" value="5"> 5% (primi 5 anni)</label>
+          </div>
+          <div class="calc-result">
+            <div class="calc-result-label">Guadagno netto stimato come freelance</div>
+            <div class="calc-result-value" id="calc-netto">&euro;2.450</div>
+            <div class="calc-diff" id="calc-diff">+&euro;950/mese</div>
+          </div>
+          <div class="calc-occ">
+            <p class="text-sm" style="color:var(--yellow)"><strong>Meno di 30 giorni lavorati?</strong></p>
+            <p class="text-tiny text-muted">Puoi iniziare con la prestazione occasionale sotto &euro;5.000/anno, senza aprire P.IVA. Zero rischi per provare.</p>
+          </div>
+          <p class="text-tiny text-muted mt-md">Stima indicativa basata su aliquota forfettaria e coefficiente redditivit&agrave; 67%. Consulta un commercialista.</p>
+          <div class="mt-md">
+            <a href="/simulatore-guadagno" class="btn btn-ghost btn-sm" style="color:var(--terracotta);padding-left:0">Vedi il simulatore completo</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-bg">
+  <div style="max-width:900px;margin:0 auto;text-align:center">
+    <p class="section-label">Il tuo valore</p>
+    <h2 class="section-title">Conosci il tuo valore.<br>Noi ti aiutiamo a <em style="color:var(--terracotta);font-family:var(--font-display);font-style:italic">fartelo pagare.</em></h2>
+    <div class="grid-3 mt-xl">
+      <div class="card card-body" style="text-align:center">
+        <div style="margin-bottom:var(--space-sm)"><i data-lucide="calendar-check" style="width:36px;height:36px;color:var(--terracotta)"></i></div>
+        <h3 class="font-display font-semibold" style="font-size:var(--fs-h3);margin-bottom:var(--space-xs)">Lavori quando vuoi</h3>
+        <p class="text-sm text-muted">Scegli i turni, i giorni e i ristoranti. Nessun padrone, nessun obbligo.</p>
+      </div>
+      <div class="card card-body" style="text-align:center">
+        <div style="margin-bottom:var(--space-sm)"><i data-lucide="trending-up" style="width:36px;height:36px;color:var(--olive)"></i></div>
+        <h3 class="font-display font-semibold" style="font-size:var(--fs-h3);margin-bottom:var(--space-xs)">Guadagni di pi&ugrave;</h3>
+        <p class="text-sm text-muted">&euro;130-180/giorno, netti. Senza tetto, senza busta paga che ti limita.</p>
+      </div>
+      <div class="card card-body" style="text-align:center">
+        <div style="margin-bottom:var(--space-sm)"><i data-lucide="shield-check" style="width:36px;height:36px;color:var(--terracotta)"></i></div>
+        <h3 class="font-display font-semibold" style="font-size:var(--fs-h3);margin-bottom:var(--space-xs)">Tutto in regola</h3>
+        <p class="text-sm text-muted">Contratti, fatture, pagamenti. Ti guidiamo anche nell'apertura della P.IVA.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../../partials/pub-footer') %>
+<%- include('../../partials/foot') %>

@@ -1,0 +1,322 @@
+{
+  "generatedAt": "2026-04-04",
+  "workers": [
+    {
+      "id": "wrk_001",
+      "name": "Marco Rossi",
+      "displayRole": "Sommelier and floor lead",
+      "city": "Milano",
+      "zones": ["Brera", "Porta Romana", "Centro"],
+      "bio": "11 anni in fine dining e wine pairing. Abituato a servizi premium, degustazioni guidate e coordinamento della brigata di sala.",
+      "taxMode": "forfettario",
+      "vatNumber": "IT12345678901",
+      "rating": 4.9,
+      "reviewCount": 18,
+      "yearsExperience": 11,
+      "daysWorkedPlatform24m": 74,
+      "minimumFeeEur": 160,
+      "hardSkills": ["fine_dining", "wine_pairing", "guest_relations", "team_lead"],
+      "softSkills": ["puntualita", "upselling", "calma_in_servizio"],
+      "certifications": ["AIS livello 2", "HACCP", "English C1 hospitality"],
+      "availability": {
+        "mon": false,
+        "tue": true,
+        "wed": true,
+        "thu": true,
+        "fri": true,
+        "sat": true,
+        "sun": true
+      },
+      "formerEmployers": [
+        {
+          "name": "Naviglio Antico SRL",
+          "vatNumber": "IT09876543210",
+          "endedOn": "2024-09-30"
+        }
+      ],
+      "fiscalSnapshot": {
+        "grossYtdEur": 12680,
+        "platformGrossYtdEur": 4820,
+        "largestCounterpartyShare": 0.34,
+        "riskBand": "ok"
+      }
+    },
+    {
+      "id": "wrk_002",
+      "name": "Giulia De Santis",
+      "displayRole": "Bartender and aperitivo specialist",
+      "city": "Roma",
+      "zones": ["Prati", "Monti", "Centro Storico"],
+      "bio": "7 anni tra cocktail bar e locali ad alto flusso. Forte su aperitivo, banco e gestione del ritmo in fascia pre-cena.",
+      "taxMode": "autonomo_occasionale",
+      "vatNumber": null,
+      "rating": 4.7,
+      "reviewCount": 26,
+      "yearsExperience": 7,
+      "daysWorkedPlatform24m": 58,
+      "minimumFeeEur": 140,
+      "hardSkills": ["mixology", "aperitivo_service", "cash_handling", "closing_shift"],
+      "softSkills": ["rapidita", "customer_energy", "precisione"],
+      "certifications": ["AIBES basic bartending", "HACCP"],
+      "availability": {
+        "mon": false,
+        "tue": false,
+        "wed": true,
+        "thu": true,
+        "fri": true,
+        "sat": true,
+        "sun": true
+      },
+      "formerEmployers": [],
+      "fiscalSnapshot": {
+        "grossYtdEur": 4200,
+        "platformGrossYtdEur": 4200,
+        "largestCounterpartyShare": 0.68,
+        "riskBand": "warn"
+      }
+    }
+  ],
+  "restaurants": [
+    {
+      "id": "rst_001",
+      "legalName": "Terrazza Brera SRL",
+      "brandName": "Terrazza Brera",
+      "city": "Milano",
+      "zones": ["Brera"],
+      "style": "Fine dining contemporaneo",
+      "vibe": ["premium", "business", "romantic"],
+      "avgTicketEur": 95,
+      "rating": 4.8,
+      "reviewCount": 41,
+      "servicePackages": [
+        {
+          "id": "pkg_001",
+          "name": "Servizio cena fine dining",
+          "roleNeeded": "sommelier",
+          "resultLabel": "gestione sala e pairing vini",
+          "flatFeeEur": 180
+        },
+        {
+          "id": "pkg_002",
+          "name": "Degustazione guidata private room",
+          "roleNeeded": "sommelier",
+          "resultLabel": "accoglienza ospiti e wine storytelling",
+          "flatFeeEur": 220
+        }
+      ]
+    },
+    {
+      "id": "rst_002",
+      "legalName": "Osteria del Porto SRL",
+      "brandName": "Osteria del Porto",
+      "city": "Roma",
+      "zones": ["Prati"],
+      "style": "Seafood casual dining",
+      "vibe": ["high_volume", "tourist", "informal"],
+      "avgTicketEur": 38,
+      "rating": 4.4,
+      "reviewCount": 63,
+      "servicePackages": [
+        {
+          "id": "pkg_003",
+          "name": "Banco aperitivo weekend",
+          "roleNeeded": "bartender",
+          "resultLabel": "gestione aperitivo e velocita servizio banco",
+          "flatFeeEur": 150
+        },
+        {
+          "id": "pkg_004",
+          "name": "Supporto sala cena weekend",
+          "roleNeeded": "cameriere",
+          "resultLabel": "copertura servizio sala e chiusura ranghi",
+          "flatFeeEur": 135
+        }
+      ]
+    }
+  ],
+  "serviceRequests": [
+    {
+      "id": "req_001",
+      "restaurantId": "rst_001",
+      "packageId": "pkg_001",
+      "serviceDate": "2026-04-12",
+      "status": "open",
+      "requestedSkills": ["fine_dining", "wine_pairing", "english_c1"]
+    },
+    {
+      "id": "req_002",
+      "restaurantId": "rst_002",
+      "packageId": "pkg_003",
+      "serviceDate": "2026-04-11",
+      "status": "open",
+      "requestedSkills": ["mixology", "aperitivo_service", "rapidita"]
+    }
+  ],
+  "engagements": [
+    {
+      "id": "eng_001",
+      "workerId": "wrk_001",
+      "restaurantId": "rst_001",
+      "packageId": "pkg_001",
+      "serviceDate": "2026-03-21",
+      "grossEur": 180,
+      "platformFeeEur": 25,
+      "workerNetEur": 155,
+      "status": "completed"
+    },
+    {
+      "id": "eng_002",
+      "workerId": "wrk_001",
+      "restaurantId": "rst_001",
+      "packageId": "pkg_002",
+      "serviceDate": "2026-03-29",
+      "grossEur": 220,
+      "platformFeeEur": 30,
+      "workerNetEur": 190,
+      "status": "completed"
+    },
+    {
+      "id": "eng_003",
+      "workerId": "wrk_001",
+      "restaurantId": "rst_001",
+      "packageId": "pkg_001",
+      "serviceDate": "2026-04-12",
+      "grossEur": 180,
+      "platformFeeEur": 25,
+      "workerNetEur": 155,
+      "status": "confirmed"
+    },
+    {
+      "id": "eng_004",
+      "workerId": "wrk_002",
+      "restaurantId": "rst_002",
+      "packageId": "pkg_003",
+      "serviceDate": "2026-03-08",
+      "grossEur": 150,
+      "platformFeeEur": 20,
+      "workerNetEur": 130,
+      "status": "completed"
+    },
+    {
+      "id": "eng_005",
+      "workerId": "wrk_002",
+      "restaurantId": "rst_002",
+      "packageId": "pkg_003",
+      "serviceDate": "2026-03-15",
+      "grossEur": 150,
+      "platformFeeEur": 20,
+      "workerNetEur": 130,
+      "status": "completed"
+    },
+    {
+      "id": "eng_006",
+      "workerId": "wrk_002",
+      "restaurantId": "rst_002",
+      "packageId": "pkg_003",
+      "serviceDate": "2026-03-22",
+      "grossEur": 150,
+      "platformFeeEur": 20,
+      "workerNetEur": 130,
+      "status": "completed"
+    },
+    {
+      "id": "eng_007",
+      "workerId": "wrk_002",
+      "restaurantId": "rst_002",
+      "packageId": "pkg_003",
+      "serviceDate": "2026-03-29",
+      "grossEur": 150,
+      "platformFeeEur": 20,
+      "workerNetEur": 130,
+      "status": "completed"
+    },
+    {
+      "id": "eng_008",
+      "workerId": "wrk_002",
+      "restaurantId": "rst_002",
+      "packageId": "pkg_003",
+      "serviceDate": "2026-04-05",
+      "grossEur": 150,
+      "platformFeeEur": 20,
+      "workerNetEur": 130,
+      "status": "confirmed"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev_001",
+      "fromEntityId": "rst_001",
+      "toEntityId": "wrk_001",
+      "reliability": 5,
+      "punctuality": 5,
+      "professionalism": 5,
+      "comment": "Gestione impeccabile della carta vini e upselling elegante."
+    },
+    {
+      "id": "rev_002",
+      "fromEntityId": "wrk_001",
+      "toEntityId": "rst_001",
+      "reliability": 5,
+      "punctuality": 4,
+      "professionalism": 5,
+      "comment": "Brief chiaro, brigata ordinata, cliente premium ben gestito."
+    },
+    {
+      "id": "rev_003",
+      "fromEntityId": "rst_002",
+      "toEntityId": "wrk_002",
+      "reliability": 4,
+      "punctuality": 5,
+      "professionalism": 4,
+      "comment": "Ottima energia al banco e tenuta del ritmo in fascia aperitivo."
+    },
+    {
+      "id": "rev_004",
+      "fromEntityId": "wrk_002",
+      "toEntityId": "rst_002",
+      "reliability": 4,
+      "punctuality": 4,
+      "professionalism": 4,
+      "comment": "Locale dinamico, picchi di volume alti ma staff collaborativo."
+    }
+  ],
+  "pairMetrics": [
+    {
+      "workerId": "wrk_001",
+      "restaurantId": "rst_001",
+      "days24m": 22,
+      "grossEur24m": 3960,
+      "workerRevenueShare24m": 0.34,
+      "controlScore": 22,
+      "decision": "allow",
+      "notes": "Pair premium con concentrazione sotto soglia e nessun legame ex datore."
+    },
+    {
+      "workerId": "wrk_002",
+      "restaurantId": "rst_002",
+      "days24m": 54,
+      "grossEur24m": 8100,
+      "workerRevenueShare24m": 0.68,
+      "controlScore": 51,
+      "decision": "warn",
+      "notes": "Vicino alla soglia interna di concentrazione; il matching deve favorire rotazione."
+    }
+  ],
+  "complianceAlerts": [
+    {
+      "id": "alt_001",
+      "type": "occasional_threshold",
+      "severity": "medium",
+      "subjectId": "wrk_002",
+      "message": "Giulia e a 4200 EUR YTD in lavoro autonomo occasionale. Attivare alert apertura forfettario."
+    },
+    {
+      "id": "alt_002",
+      "type": "mono_committenza_internal",
+      "severity": "medium",
+      "subjectId": "wrk_002",
+      "restaurantId": "rst_002",
+      "message": "Pair vicino alla soglia interna 70%. Ridurre nuova esposizione verso lo stesso locale."
+    }
+  ]
+}

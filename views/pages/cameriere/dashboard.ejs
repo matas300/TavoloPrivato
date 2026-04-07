@@ -1,0 +1,194 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <section class="hero-panel mb-xl">
+        <div class="flex justify-between items-start gap-lg flex-wrap">
+          <div style="max-width:760px">
+            <span class="eyebrow mb-md">Worker cockpit</span>
+            <h1 class="font-display font-bold mb-sm" style="font-size:var(--fs-h1)"><%= profile.headline %></h1>
+            <p class="page-lead"><%= profile.bio %></p>
+            <div class="metric-strip mt-lg">
+              <div class="metric-pill">
+                <span>Tax mode</span>
+                <strong><%= fiscalBanner.mode === 'forfettario' ? 'Forfettario' : 'Occasionale' %></strong>
+              </div>
+              <div class="metric-pill">
+                <span>YTD lordo</span>
+                <strong>EUR <%= fiscalBanner.grossYtdEur.toLocaleString('it-IT') %></strong>
+              </div>
+              <div class="metric-pill">
+                <span>Profilo completo</span>
+                <strong><%= profile.profileCompleteness %>%</strong>
+              </div>
+              <div class="metric-pill">
+                <span>Safe harbor</span>
+                <strong><%= profile.safeHarborCandidate ? 'attenuante' : 'standard' %></strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="surface-muted" style="max-width:340px">
+            <div class="text-tiny text-muted mb-sm">Compliance personale</div>
+            <div class="font-display font-bold mb-sm" style="font-size:var(--fs-h2);color:var(--olive)"><%= fiscalBanner.label %></div>
+            <p class="text-sm text-muted mb-md">La piattaforma ti propone prestazioni a giornata e monitora concentrazione, continuita e soglia occasionale.</p>
+            <div class="progress mb-sm">
+              <div class="progress-bar <%= fiscalBanner.thresholdPct >= 90 ? 'progress-red' : fiscalBanner.thresholdPct >= 75 ? 'progress-terracotta' : 'progress-olive' %>" style="width:<%= Math.min(fiscalBanner.thresholdPct, 100) %>%"></div>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">soglia 5.000 EUR</span>
+              <strong><%= fiscalBanner.thresholdPct %>%</strong>
+            </div>
+            <% if (fiscalBanner.mode === 'autonomo_occasionale' && fiscalBanner.thresholdPct >= 75) { %>
+              <div class="alert-box alert-warning mt-md" style="margin-bottom:0">
+                <div>
+                  <strong>Alert operativo</strong>
+                  <p class="text-sm text-muted">Se continui su questo ritmo devi preparare il passaggio a forfettario e ruotare i locali piu concentrati.</p>
+                </div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid-4 mb-xl">
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= monthEarnings.toLocaleString('it-IT') %></div>
+          <div class="stat-label">Payout chiusi</div>
+          <div class="stat-change stat-positive">prestazioni completate nel periodo</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= completed.length %></div>
+          <div class="stat-label">Servizi completati</div>
+          <div class="stat-change"><%= profile.workIdentity %></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= upcoming.length %></div>
+          <div class="stat-label">Prestazioni in agenda</div>
+          <div class="stat-change"><%= profile.preferredZones.join(' | ') %></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= profile.rating %></div>
+          <div class="stat-label">Rating medio</div>
+          <div class="stars mt-xs"><%- include('../../partials/stars', { rating: profile.rating }) %></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="flex justify-between items-center mb-md">
+            <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Prestazioni confermate</h3>
+            <a href="/cameriere/contratti" class="btn btn-outline btn-sm">Apri contratti</a>
+          </div>
+
+          <% if (upcoming.length === 0) { %>
+            <div class="surface-muted">
+              <p class="text-sm text-muted">Nessuna prestazione confermata. Il motore sta continuando a cercare locali compatibili con il tuo profilo.</p>
+            </div>
+          <% } else { %>
+            <% upcoming.forEach(item => { %>
+              <div class="card mb-md">
+                <div class="card-body">
+                  <div class="flex justify-between items-start gap-md">
+                    <div>
+                      <div class="flex items-center gap-sm mb-sm">
+                        <span class="score-pill"><%= item.restaurant.name %></span>
+                        <span class="badge <%= item.compliance.decision === 'allow' ? 'badge-olive' : item.compliance.decision === 'warn' ? 'badge-yellow' : 'badge-red' %>"><%= item.compliance.decision === 'allow' ? 'verde' : item.compliance.decision === 'warn' ? 'monitorare' : 'rotazione' %></span>
+                      </div>
+                      <div class="font-semibold mb-xs"><%= item.package ? item.package.name : 'Prestazione di servizio' %></div>
+                      <div class="text-sm text-muted"><%= item.data %> | <%= item.package ? item.package.resultLabel : item.tipo %></div>
+                    </div>
+                    <div class="text-right">
+                      <div class="font-semibold" style="color:var(--olive)">EUR <%= item.compensoCam %></div>
+                      <div class="text-tiny text-muted">netto worker</div>
+                    </div>
+                  </div>
+                  <div class="detail-list mt-md">
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Giorni 24 mesi su questo locale</span>
+                      <strong><%= item.compliance.days24m %></strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Share fatturato</span>
+                      <strong><%= Math.round(item.compliance.share24m * 100) %>%</strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Control score</span>
+                      <strong><%= item.compliance.controlScore %></strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-md">
+            <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Match consigliati</h3>
+            <a href="/cameriere/cerca" class="btn btn-outline btn-sm">Apri marketplace</a>
+          </div>
+
+          <% opportunities.forEach(item => { %>
+            <div class="card card-hover mb-md">
+              <div class="card-body">
+                <div class="flex justify-between items-start gap-md">
+                  <div>
+                    <div class="flex items-center gap-sm mb-sm">
+                      <span class="score-pill">Match <%= item.matchScore %>/100</span>
+                      <span class="badge <%= item.complianceUi.badge %>"><%= item.complianceUi.label %></span>
+                    </div>
+                    <div class="font-semibold"><%= item.restaurant.name %></div>
+                    <div class="text-sm text-muted"><%= item.restaurant.zona %> | <%= item.restaurant.tipoCucina %></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-semibold" style="color:var(--olive)">EUR <%= item.workerNet %></div>
+                    <div class="text-tiny text-muted">payout previsto</div>
+                  </div>
+                </div>
+
+                <p class="text-sm mt-md"><%= item.package ? item.package.name : 'Prestazione di servizio' %> | <%= item.package ? item.package.resultLabel : item.desc %></p>
+
+                <div class="metric-strip mt-md">
+                  <% item.qualifiche.forEach(q => { %>
+                    <span class="badge badge-terracotta"><%= q %></span>
+                  <% }) %>
+                  <span class="badge badge-neutral"><%= item.tipo %></span>
+                  <span class="badge badge-neutral">fee piattaforma EUR <%= item.platformFee %></span>
+                </div>
+
+                <div class="detail-list mt-md">
+                  <div class="detail-row">
+                    <span class="text-sm text-muted">Nota legale</span>
+                    <strong><%= item.legalNote %></strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+
+          <div class="surface-muted">
+            <div class="text-tiny text-muted mb-sm">Counterparty piu delicata</div>
+            <div class="font-semibold mb-xs"><%= Math.round(topCounterparty.share24m * 100) %>% share su un singolo locale</div>
+            <p class="text-sm text-muted mb-md">Se superi i guardrail interni il sistema smette di proporti nuovi servizi ricorrenti sullo stesso committente.</p>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Giorni 24 mesi</span>
+                <strong><%= topCounterparty.days24m %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Decisione</span>
+                <strong><%= topCounterparty.decision %></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

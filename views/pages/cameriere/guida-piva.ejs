@@ -1,0 +1,52 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up" style="max-width:700px">
+
+      <div class="card">
+        <div class="card-body">
+          <h2 class="font-display font-bold mb-md" style="font-size:var(--fs-h2)">P.IVA Forfettaria: tutto quello che devi sapere</h2>
+          <p class="text-muted mb-xl">La guida essenziale per camerieri freelance in Italia.</p>
+
+          <h3 class="font-display font-semibold mb-sm" style="font-size:var(--fs-h3)">Cos'&egrave; il regime forfettario?</h3>
+          <p class="text-sm mb-lg">&Egrave; un regime fiscale agevolato per professionisti con ricavi sotto &euro;85.000/anno. Prevede un'imposta sostitutiva unica (15%, o 5% per i primi 5 anni) al posto di IRPEF, addizionali e IRAP.</p>
+
+          <h3 class="font-display font-semibold mb-sm" style="font-size:var(--fs-h3)">Come si calcola il reddito imponibile?</h3>
+          <p class="text-sm mb-md">Si applica un coefficiente di redditivit&agrave; al fatturato lordo. Per la categoria "servizi" &egrave; il <strong>67%</strong>.</p>
+
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:var(--space-lg);margin-bottom:var(--space-lg)">
+            <p class="text-sm"><strong>Esempio con &euro;30.000 di fatturato:</strong></p>
+            <p class="text-sm">Imponibile = &euro;30.000 &times; 67% = <strong>&euro;20.100</strong></p>
+            <p class="text-sm">Imposta (15%) = &euro;20.100 &times; 15% = <strong>&euro;3.015</strong></p>
+            <p class="text-sm">INPS (26%) = &euro;20.100 &times; 26.07% = <strong>&euro;5.240</strong></p>
+            <p class="text-sm mt-sm"><strong>Netto &cong; &euro;21.745/anno = ~&euro;1.812/mese</strong></p>
+          </div>
+
+          <h3 class="font-display font-semibold mb-sm" style="font-size:var(--fs-h3)">Prestazione occasionale (&lt; &euro;5.000)</h3>
+          <p class="text-sm mb-lg">Se guadagni meno di &euro;5.000/anno puoi lavorare con la prestazione occasionale, senza aprire P.IVA. Perfetto per iniziare e testare il freelancing. TavoloLibero monitora automaticamente i tuoi guadagni.</p>
+
+          <h3 class="font-display font-semibold mb-sm" style="font-size:var(--fs-h3)">Come aprire la P.IVA?</h3>
+          <ol style="font-size:var(--fs-small);color:var(--text-secondary);padding-left:var(--space-lg);line-height:2">
+            <li>1. Vai al sito dell'Agenzia delle Entrate o rivolgiti a un CAF/commercialista</li>
+            <li>2. Compila il modello AA9/12</li>
+            <li>3. Scegli il codice ATECO 56.10.11 (ristorazione con somministrazione)</li>
+            <li>4. Seleziona il regime forfettario</li>
+            <li>5. Iscrizione alla gestione separata INPS</li>
+          </ol>
+          <p class="text-sm text-muted mt-md">Tempo stimato: 15-30 minuti online. Costo: gratuito (se fai da solo).</p>
+
+          <div class="mt-xl alert-box alert-warning" style="margin-bottom:0">
+            <div>
+              <h4 class="font-semibold mb-sm">Commercialisti convenzionati (prossimamente)</h4>
+              <p class="text-sm text-muted">Stiamo costruendo una rete di commercialisti specializzati in P.IVA forfettaria per camerieri freelance. Ti guideranno nell'apertura e nella gestione fiscale a tariffe agevolate.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

@@ -1,0 +1,130 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="hero-panel mb-xl">
+        <div class="flex justify-between items-start gap-lg flex-wrap">
+          <div style="max-width:780px">
+            <span class="eyebrow mb-sm">Contratti lunghi lato professionista</span>
+            <h1 class="font-display font-semibold" style="font-size:var(--fs-h1);line-height:1.05">Qui trovi i PDF gia generati, le milestone mensili e le scadenze di payout.</h1>
+            <p class="page-lead mt-md">Questa vista rende trasparente il flusso dei rapporti 3-8 mesi: oggetto della prestazione, termini di pagamento, compenso netto previsto e stato di ciascuna milestone.</p>
+          </div>
+          <div class="metric-strip">
+            <div class="metric-pill">
+              <span>Contratti lunghi</span>
+              <strong><%= longContracts.length %></strong>
+            </div>
+            <div class="metric-pill">
+              <span>Visibilita payout</span>
+              <strong>Milestone</strong>
+            </div>
+            <div class="metric-pill">
+              <span>Documenti</span>
+              <strong>PDF aperti</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="card-body">
+          <div class="flex justify-between items-start gap-lg flex-wrap">
+            <div style="max-width:760px">
+              <span class="eyebrow mb-sm">Cosa vedi qui</span>
+              <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Niente resta solo nel backend.</h3>
+              <p class="text-sm text-muted mt-sm">Per ogni contratto lungo puoi controllare il PDF contrattuale, le scadenze 0/15/30/45 giorni, il netto previsto per milestone e l'eventuale stato invoice associato.</p>
+            </div>
+            <div class="sim-action-buttons">
+              <a href="/cameriere/wallet" class="btn btn-outline btn-sm">Apri wallet</a>
+              <a href="/cameriere/contratti" class="btn btn-ghost btn-sm">Vai ai contratti standard</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <% if (!longContracts.length) { %>
+        <div class="card">
+          <div class="card-body">
+            <div class="surface-muted">
+              <p class="text-sm text-muted">Nel seed corrente non hai ancora contratti lunghi assegnati. La vista e pronta: appena un ristorante genera un contratto esteso, qui compariranno PDF, milestone e scadenze.</p>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="long-contract-list">
+        <% longContracts.forEach(contract => { %>
+          <article class="long-contract-card">
+            <div class="flex justify-between items-start gap-md flex-wrap">
+              <div style="max-width:720px">
+                <div class="flex items-center gap-sm flex-wrap mb-sm">
+                  <span class="badge badge-neutral">contratto #<%= contract.id %></span>
+                  <span class="badge badge-terracotta"><%= contract.paymentTermsLabel %></span>
+                  <span class="badge <%= contract.status === 'completed' ? 'badge-olive' : 'badge-neutral' %>"><%= contract.status %></span>
+                </div>
+                <h4 class="font-display font-semibold" style="font-size:1.35rem"><%= contract.restaurantName %></h4>
+                <p class="text-sm text-muted mt-sm"><%= contract.objectiveSummary %></p>
+                <% if (contract.scopeOfWork.length) { %>
+                  <div class="note-list mt-md">
+                    <% contract.scopeOfWork.forEach(item => { %>
+                      <div class="surface-muted"><%= item %></div>
+                    <% }) %>
+                  </div>
+                <% } %>
+              </div>
+              <div class="surface-muted" style="min-width:300px">
+                <div class="detail-list">
+                  <div class="detail-row"><span class="text-sm text-muted">Periodo</span><strong><%= new Date(contract.serviceStartDate).toLocaleDateString('it-IT') %> - <%= new Date(contract.serviceEndDate).toLocaleDateString('it-IT') %></strong></div>
+                  <div class="detail-row"><span class="text-sm text-muted">Corrispettivo totale</span><strong>EUR <%= contract.grossAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+                  <div class="detail-row"><span class="text-sm text-muted">Netto professionista</span><strong style="color:var(--olive)">EUR <%= contract.workerNetEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+                  <div class="detail-row"><span class="text-sm text-muted">Fee piattaforma</span><strong>EUR <%= contract.platformFeeEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+                </div>
+                <% if (contract.pdfUrl) { %>
+                  <a class="btn btn-outline btn-sm mt-md" href="<%= contract.pdfUrl %>" target="_blank" rel="noreferrer">Apri PDF contratto</a>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="table-wrap mt-md">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Milestone</th>
+                    <th>Invoice</th>
+                    <th>Scadenza</th>
+                    <th>Lordo</th>
+                    <th>Fee</th>
+                    <th>Netto</th>
+                    <th>Stato</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% contract.milestones.forEach(milestone => { %>
+                    <tr>
+                      <td><%= milestone.milestoneLabel %></td>
+                      <td><%= milestone.invoiceNumber || new Date(milestone.invoiceDate).toLocaleDateString('it-IT') %></td>
+                      <td><%= new Date(milestone.dueDate).toLocaleDateString('it-IT') %></td>
+                      <td>EUR <%= milestone.grossAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                      <td>EUR <%= milestone.feeAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                      <td>EUR <%= milestone.workerNetEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                      <td>
+                        <span class="badge <%= milestone.status === 'paid' ? 'badge-olive' : milestone.status === 'processing' || milestone.invoiceStatus === 'open' ? 'badge-terracotta' : 'badge-neutral' %>">
+                          <%= milestone.invoiceStatus || milestone.status %>
+                        </span>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

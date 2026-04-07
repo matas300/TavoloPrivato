@@ -1,0 +1,27 @@
+{
+  "name": "tavolibero",
+  "version": "1.0.0",
+  "description": "Marketplace B2B2C per camerieri freelance in Italia",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev --name init",
+    "db:seed": "node prisma/seed.js",
+    "db:studio": "prisma studio",
+    "db:validate": "prisma validate",
+    "payments:run": "node scripts/run-monthly-billing.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "dotenv": "^17.4.0",
+    "ejs": "^3.1.10",
+    "express": "^4.21.0",
+    "express-session": "^1.18.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.8.2"
+  }
+}

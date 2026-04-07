@@ -1,0 +1,128 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="hero-panel mb-xl">
+        <span class="eyebrow mb-md">Matching marketplace</span>
+        <h1 class="font-display font-bold mb-sm" style="font-size:var(--fs-h1)">Trova prestazioni coerenti con il tuo profilo</h1>
+        <p class="page-lead">Le opportunita sono filtrate su competenze, zona, payout netto e rischio di concentrazione sul singolo committente. Lato prodotto stai comprando e vendendo servizi a risultato, non ore.</p>
+      </div>
+
+      <div class="card card-flat mb-xl">
+        <div class="card-body" style="background:var(--bg-secondary);border-radius:var(--radius-lg)">
+          <form method="GET" action="/cameriere/cerca" class="form-row">
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Zona</label>
+              <select class="form-input form-select" name="zona">
+                <option value="">Tutte</option>
+                <option value="Milano" <%= filters.zona === 'Milano' ? 'selected' : '' %>>Milano</option>
+                <option value="Roma" <%= filters.zona === 'Roma' ? 'selected' : '' %>>Roma</option>
+                <option value="Firenze" <%= filters.zona === 'Firenze' ? 'selected' : '' %>>Firenze</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Formato servizio</label>
+              <select class="form-input form-select" name="tipo">
+                <option value="">Tutti</option>
+                <option value="pranzo" <%= filters.tipo === 'pranzo' ? 'selected' : '' %>>Pranzo</option>
+                <option value="cena" <%= filters.tipo === 'cena' ? 'selected' : '' %>>Cena</option>
+                <option value="full-day" <%= filters.tipo === 'full-day' ? 'selected' : '' %>>Full day</option>
+                <option value="evento" <%= filters.tipo === 'evento' ? 'selected' : '' %>>Evento</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Payout minimo</label>
+              <input class="form-input" type="number" name="budget" placeholder="0" value="<%= filters.budget || '' %>">
+            </div>
+            <div class="form-group" style="margin:0;display:flex;align-items:flex-end">
+              <button type="submit" class="btn btn-primary">Aggiorna lista</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="metric-strip mb-xl">
+        <div class="metric-pill">
+          <span>Zona base</span>
+          <strong><%= user.zona %></strong>
+        </div>
+        <div class="metric-pill">
+          <span>Target fee</span>
+          <strong><%= user.dayRateLabel %></strong>
+        </div>
+        <div class="metric-pill">
+          <span>Competenze core</span>
+          <strong><%= user.qualifiche.slice(0, 2).join(' | ') %></strong>
+        </div>
+      </div>
+
+      <% if (annunci.length === 0) { %>
+        <div class="surface-muted text-center">
+          <i data-lucide="search-x" style="width:48px;height:48px;margin-bottom:var(--space-md);opacity:0.5"></i>
+          <p>Nessuna prestazione trovata con questi filtri.</p>
+        </div>
+      <% } else { %>
+        <% annunci.forEach(item => { %>
+          <div class="card card-hover mb-md">
+            <div class="card-body">
+              <div class="flex justify-between items-start gap-lg flex-wrap">
+                <div style="max-width:760px">
+                  <div class="flex items-center gap-sm flex-wrap mb-sm">
+                    <span class="score-pill">Match <%= item.matchScore %>/100</span>
+                    <span class="badge <%= item.complianceUi.badge %>"><%= item.complianceUi.label %></span>
+                    <span class="badge badge-neutral"><%= item.tipo %></span>
+                    <span class="badge badge-terracotta"><%= item.data %></span>
+                  </div>
+                  <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)"><%= item.restaurant.name %></h3>
+                  <div class="text-sm text-muted"><%= item.restaurant.zona %> | <%= item.restaurant.tipoCucina %> | ticket medio EUR <%= item.restaurant.avgTicketEur %></div>
+                  <p class="text-sm mt-md"><%= item.package ? item.package.name : 'Prestazione di servizio' %> | <%= item.package ? item.package.resultLabel : item.desc %></p>
+                  <div class="metric-strip mt-md">
+                    <% item.qualifiche.forEach(q => { %>
+                      <span class="badge badge-terracotta"><%= q %></span>
+                    <% }) %>
+                    <% if (item.package) { %>
+                      <% item.package.requiredSkills.forEach(skill => { %>
+                        <span class="badge badge-neutral"><%= skill %></span>
+                      <% }) %>
+                    <% } %>
+                  </div>
+                </div>
+
+                <div class="surface-muted" style="min-width:280px">
+                  <div class="detail-list">
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Budget ristorante</span>
+                      <strong>EUR <%= item.budget %></strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Fee piattaforma</span>
+                      <strong>EUR <%= item.platformFee %></strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Netto previsto</span>
+                      <strong style="color:var(--olive)">EUR <%= item.workerNet %></strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Share con questo locale</span>
+                      <strong><%= Math.round(item.compliance.share24m * 100) %>%</strong>
+                    </div>
+                  </div>
+                  <p class="text-sm text-muted mt-md"><%= item.legalNote %></p>
+                  <div class="flex gap-sm mt-md">
+                    <button class="btn btn-primary btn-sm" onclick="candidati(<%= item.id %>)">Candidati</button>
+                    <button class="btn btn-ghost btn-sm" onclick="showToast('Chat interna aperta in demo')">Chat</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

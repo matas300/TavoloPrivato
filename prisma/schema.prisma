@@ -1,0 +1,902 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  cameriere
+  ristorante
+  admin
+}
+
+enum UserStatus {
+  active
+  suspended
+  pending_review
+}
+
+enum IdentityProvider {
+  google
+  apple
+  email
+}
+
+enum TaxMode {
+  forfettario
+  autonomo_occasionale
+  unknown
+}
+
+enum SkillLevel {
+  basic
+  advanced
+  expert
+}
+
+enum MatchDecision {
+  allow
+  warn
+  manual_review
+  soft_stop
+  hard_stop
+}
+
+enum RequestStatus {
+  open
+  shortlisted
+  matched
+  cancelled
+  completed
+}
+
+enum MatchStatus {
+  proposed
+  accepted
+  rejected
+  expired
+  blocked
+}
+
+enum TrialOutcome {
+  scheduled
+  completed
+  cancelled
+  failed
+}
+
+enum ContractStatus {
+  draft
+  awaiting_signature
+  signed
+  voided
+  completed
+}
+
+enum EngagementType {
+  one_off
+  long_term
+}
+
+enum PaymentTermsDays {
+  d0
+  d15
+  d30
+  d45
+}
+
+enum PaymentTermsBase {
+  invoice_date
+  end_of_month
+}
+
+enum PaymentStatus {
+  created
+  authorized
+  captured
+  failed
+  refunded
+}
+
+enum MilestoneStatus {
+  planned
+  invoiced
+  processing
+  paid
+  overdue
+  cancelled
+}
+
+enum PayoutStatus {
+  pending
+  on_hold
+  released
+  failed
+}
+
+enum InvoiceStatus {
+  draft
+  open
+  paid
+  overdue
+  void
+  uncollectible
+}
+
+enum AlertSeverity {
+  low
+  medium
+  high
+}
+
+enum AlertStatus {
+  open
+  in_review
+  resolved
+  dismissed
+}
+
+model User {
+  id                  Int                 @id
+  role                UserRole
+  email               String              @unique
+  passwordHash        String?
+  isVerified          Boolean             @default(false)
+  status              UserStatus          @default(active)
+  displayName         String
+  initials            String?
+  avatarUrl           String?
+  phoneE164           String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  identities          UserIdentity[]
+  consents            Consent[]
+  sessions            Session[]
+  workerProfile       WorkerProfile?
+  restaurantProfile   RestaurantProfile?
+  sentMessages        Message[]           @relation("SentMessages")
+  contractSignatures  ContractSignature[]
+  manualReviews       ManualReview[]
+  reviewsWritten      Review[]            @relation("ReviewsWritten")
+  reviewsReceived     Review[]            @relation("ReviewsReceived")
+  reviewEventsTriggered ReviewEvent[]     @relation("ReviewEventTriggeredBy")
+  reviewEventsReceived ReviewEvent[]      @relation("ReviewEventReviewee")
+  reviewAggregate     ReviewAggregate?
+  earningsScenarios   EarningsScenario[]
+  auditLogs           AuditLog[]
+  outboxEvents        OutboxEvent[]
+
+  @@index([role, status])
+}
+
+model UserIdentity {
+  id              Int              @id @default(autoincrement())
+  userId          Int
+  provider        IdentityProvider
+  providerSubject String
+  createdAt       DateTime         @default(now())
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@index([userId])
+}
+
+model Consent {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  consentKey     String
+  consentVersion String
+  granted        Boolean
+  grantedAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, consentKey, consentVersion])
+}
+
+model Session {
+  id           String   @id
+  userId       Int
+  sessionToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model Organization {
+  id                 Int                 @id @default(autoincrement())
+  legalName          String
+  vatNumber          String              @unique
+  fiscalCode         String?
+  legalForm          String?
+  city               String
+  createdAt          DateTime            @default(now())
+  counterpartyGroup  CounterpartyGroup?  @relation(fields: [counterpartyGroupId], references: [id], onDelete: SetNull)
+  counterpartyGroupId Int?
+  restaurantProfile  RestaurantProfile?
+  venues             Venue[]
+
+  @@index([city])
+}
+
+model CounterpartyGroup {
+  id            Int            @id @default(autoincrement())
+  groupKey      String         @unique
+  displayName   String
+  organizations Organization[]
+}
+
+model RestaurantProfile {
+  id                 Int                @id
+  organizationId     Int                @unique
+  ownerUserId        Int                @unique
+  brandName          String
+  cuisineType        String?
+  vibeTags           Json
+  averageTicketEur   Float?
+  description        String?
+  ratingAvg          Float?
+  ratingCount        Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  owner              User               @relation(fields: [ownerUserId], references: [id], onDelete: Restrict)
+  venues             Venue[]
+  servicePackages    ServicePackage[]
+  serviceRequests    ServiceRequest[]
+  chatThreads        ChatThread[]
+  serviceContracts   ServiceContract[]
+  pairMetrics        PairMetric[]
+  complianceAlerts   ComplianceAlert[]
+  interviews         Interview[]
+  nonRenewals        NonRenewal[]
+
+  @@index([brandName])
+}
+
+model Venue {
+  id             Int               @id @default(autoincrement())
+  organizationId Int
+  restaurantId   Int?
+  venueName      String
+  addressLine    String
+  city           String
+  region         String?
+  latitude       Float?
+  longitude      Float?
+  indoorCapacity Int?
+  createdAt      DateTime          @default(now())
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  restaurant     RestaurantProfile? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
+  servicePackages ServicePackage[]
+  serviceRequests ServiceRequest[]
+
+  @@index([city])
+}
+
+model WorkerProfile {
+  id                     Int                  @id
+  userId                 Int                  @unique
+  taxMode                TaxMode              @default(unknown)
+  vatNumber              String?
+  headline               String?
+  bio                    String?
+  homeCity               String
+  yearsExperience        Int                  @default(0)
+  minimumFeeEur          Float?
+  ratingAvg              Float?
+  ratingCount            Int                  @default(0)
+  availabilityJson       Json
+  profileCompleteness    Int                  @default(0)
+  safeHarborCandidate    Boolean              @default(false)
+  isSeniorExempt         Boolean              @default(false)
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  user                   User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferences            WorkerPreference?
+  skills                 WorkerSkill[]
+  certifications         WorkerCertification[]
+  documents              WorkerDocument[]
+  formerEmployers        FormerEmployer[]
+  taxProfile             TaxProfile?
+  matches                Match[]
+  chatThreads            ChatThread[]
+  trialServices          TrialService[]
+  serviceContracts       ServiceContract[]
+  payouts                Payout[]
+  pairMetrics            PairMetric[]
+  complianceAlerts       ComplianceAlert[]
+  matchRankings          MatchRanking[]
+  interviews             Interview[]
+  nonRenewals            NonRenewal[]
+
+  @@index([taxMode, homeCity])
+}
+
+model WorkerPreference {
+  id                    Int           @id @default(autoincrement())
+  workerProfileId       Int           @unique
+  preferredZones        Json
+  preferredServiceTypes Json
+  maxTravelKm           Int?
+  preferredShiftLabels  Json
+  workerProfile         WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+}
+
+model WorkerSkill {
+  id              Int           @id @default(autoincrement())
+  workerProfileId Int
+  skillCode       String
+  skillLevel      SkillLevel
+  verified        Boolean       @default(false)
+  workerProfile   WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([workerProfileId, skillCode])
+  @@index([skillCode, verified])
+}
+
+model WorkerCertification {
+  id                Int           @id @default(autoincrement())
+  workerProfileId   Int
+  certificationName String
+  issuer            String?
+  issuedOn          DateTime?
+  expiresOn         DateTime?
+  verified          Boolean       @default(false)
+  workerProfile     WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+}
+
+model WorkerDocument {
+  id              Int           @id @default(autoincrement())
+  workerProfileId Int
+  documentType    String
+  storageKey      String
+  verified        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  workerProfile   WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+}
+
+model TaxProfile {
+  id                     Int           @id @default(autoincrement())
+  workerProfileId        Int           @unique
+  annualGrossYtdEur      Float         @default(0)
+  platformGrossYtdEur    Float         @default(0)
+  largestCounterpartyShare Float       @default(0)
+  riskBand               String?
+  workerProfile          WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+}
+
+model FormerEmployer {
+  id                Int           @id @default(autoincrement())
+  workerProfileId   Int
+  employerName      String
+  employerVatNumber String?
+  endedOn           DateTime
+  relatedGroupKey   String?
+  workerProfile     WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  @@index([workerProfileId, endedOn])
+}
+
+model ServicePackage {
+  id                  Int               @id
+  restaurantProfileId Int
+  venueId             Int?
+  packageName         String
+  serviceResultLabel  String
+  roleNeeded          String
+  flatFeeEur          Float
+  serviceDurationLabel String?
+  serviceType         String?
+  active              Boolean           @default(true)
+  restaurantProfile   RestaurantProfile @relation(fields: [restaurantProfileId], references: [id], onDelete: Cascade)
+  venue               Venue?            @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  serviceRequests     ServiceRequest[]
+  splitRule           SplitRule?
+
+  @@index([restaurantProfileId, active])
+}
+
+model ServiceRequest {
+  id                  Int                 @id
+  restaurantProfileId Int
+  venueId             Int?
+  servicePackageId    Int?
+  engagementType      EngagementType      @default(one_off)
+  requestedDate       DateTime
+  requestedEndDate    DateTime?
+  estimatedServiceDays Int?
+  objectiveSummary    String?
+  paymentTermsDays    PaymentTermsDays    @default(d0)
+  paymentTermsBase    PaymentTermsBase    @default(invoice_date)
+  requestedSkills     Json
+  notes               String?
+  status              RequestStatus       @default(open)
+  createdAt           DateTime            @default(now())
+  restaurantProfile   RestaurantProfile   @relation(fields: [restaurantProfileId], references: [id], onDelete: Cascade)
+  venue               Venue?              @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  servicePackage      ServicePackage?     @relation(fields: [servicePackageId], references: [id], onDelete: SetNull)
+  matches             Match[]
+  chatThreads         ChatThread[]
+  interviews          Interview[]
+  trialServices       TrialService[]
+  serviceContracts    ServiceContract[]
+  complianceSnapshots ComplianceSnapshot[]
+  matchRankings       MatchRanking[]
+
+  @@index([restaurantProfileId, status, requestedDate])
+}
+
+model Match {
+  id               Int           @id @default(autoincrement())
+  serviceRequestId Int
+  workerProfileId  Int
+  rankingScore     Float
+  complianceState  MatchDecision
+  matchStatus      MatchStatus   @default(proposed)
+  proposedAt       DateTime      @default(now())
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  workerProfile    WorkerProfile  @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceRequestId, workerProfileId])
+  @@index([complianceState, rankingScore])
+}
+
+model MatchRanking {
+  id               Int           @id @default(autoincrement())
+  serviceRequestId Int
+  workerProfileId  Int
+  score            Float
+  rationale        Json
+  createdAt        DateTime      @default(now())
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  workerProfile    WorkerProfile  @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId, score])
+}
+
+model Interview {
+  id               Int            @id @default(autoincrement())
+  serviceRequestId Int
+  workerProfileId  Int
+  restaurantId     Int
+  status           String
+  scheduledAt      DateTime?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  workerProfile    WorkerProfile  @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  restaurant       RestaurantProfile @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model ChatThread {
+  id                  Int               @id @default(autoincrement())
+  serviceRequestId    Int?
+  workerProfileId     Int
+  restaurantProfileId Int
+  createdAt           DateTime          @default(now())
+  serviceRequest      ServiceRequest?   @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+  workerProfile       WorkerProfile     @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  restaurantProfile   RestaurantProfile @relation(fields: [restaurantProfileId], references: [id], onDelete: Cascade)
+  messages            Message[]
+
+  @@index([workerProfileId, restaurantProfileId])
+}
+
+model Message {
+  id           Int        @id
+  chatThreadId Int
+  senderUserId Int
+  messageBody  String
+  sentAt       DateTime
+  readAt       DateTime?
+  chatThread   ChatThread @relation(fields: [chatThreadId], references: [id], onDelete: Cascade)
+  sender       User       @relation("SentMessages", fields: [senderUserId], references: [id], onDelete: Cascade)
+
+  @@index([chatThreadId, sentAt])
+}
+
+model TrialService {
+  id               Int            @id @default(autoincrement())
+  serviceRequestId Int
+  workerProfileId  Int
+  outcome          TrialOutcome?
+  scheduledAt      DateTime?
+  completedAt      DateTime?
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  workerProfile    WorkerProfile  @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+}
+
+model ContractTemplate {
+  id          Int                @id @default(autoincrement())
+  templateKey String             @unique
+  mode        TaxMode
+  title       String
+  bodyMd      String
+  active      Boolean            @default(true)
+  contracts   ServiceContract[]
+}
+
+model ServiceContract {
+  id                  Int                 @id
+  serviceRequestId    Int?
+  workerProfileId     Int
+  restaurantProfileId Int
+  contractMode        TaxMode
+  templateId          Int?
+  contractTitle       String              @default("Contratto di Prestazione d'Opera Autonoma ex art. 2222 C.c.")
+  engagementType      EngagementType      @default(one_off)
+  objectiveSummary    String?
+  scopeOfWorkJson     Json?
+  grossAmountEur      Float
+  platformFeeEur      Float
+  workerNetEur        Float
+  serviceDate         DateTime
+  serviceStartDate    DateTime?
+  serviceEndDate      DateTime?
+  estimatedServiceDays Int?
+  monthlyGrossAmountEur Float?
+  paymentTermsDays    PaymentTermsDays    @default(d0)
+  paymentTermsBase    PaymentTermsBase    @default(invoice_date)
+  billingFrequency    String?
+  pdfUrl              String?
+  contractSnapshot    Json?
+  serviceType         String?
+  status              ContractStatus      @default(draft)
+  createdAt           DateTime            @default(now())
+  serviceRequest      ServiceRequest?     @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+  workerProfile       WorkerProfile       @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  restaurantProfile   RestaurantProfile   @relation(fields: [restaurantProfileId], references: [id], onDelete: Cascade)
+  template            ContractTemplate?   @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  signatures          ContractSignature[]
+  paymentOrders       PaymentOrder[]
+  milestones          ContractMilestone[]
+  invoices            Invoice[]
+  reviews             Review[]
+  reviewEvents        ReviewEvent[]
+
+  @@index([workerProfileId, restaurantProfileId, serviceDate])
+}
+
+model ContractMilestone {
+  id                  Int               @id @default(autoincrement())
+  serviceContractId   Int
+  sequence            Int
+  milestoneLabel      String
+  periodStart         DateTime
+  periodEnd           DateTime
+  invoiceDate         DateTime
+  dueDate             DateTime
+  grossAmountEur      Float
+  platformFeeEur      Float
+  workerNetEur        Float
+  status              MilestoneStatus   @default(planned)
+  providerInvoiceId   String?
+  scheduledJobKey     String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  serviceContract     ServiceContract   @relation(fields: [serviceContractId], references: [id], onDelete: Cascade)
+  paymentOrder        PaymentOrder?
+  invoices            Invoice[]
+
+  @@unique([serviceContractId, sequence])
+  @@index([status, invoiceDate, dueDate])
+}
+
+model ContractSignature {
+  id                Int             @id @default(autoincrement())
+  serviceContractId Int
+  signerUserId      Int
+  signedAt          DateTime
+  signatureProvider String?
+  ipAddress         String?
+  serviceContract   ServiceContract @relation(fields: [serviceContractId], references: [id], onDelete: Cascade)
+  signer            User            @relation(fields: [signerUserId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceContractId, signerUserId])
+}
+
+model SplitRule {
+  id                Int            @id @default(autoincrement())
+  servicePackageId  Int?           @unique
+  workerSharePct    Float
+  platformSharePct  Float
+  notes             String?
+  servicePackage    ServicePackage? @relation(fields: [servicePackageId], references: [id], onDelete: Cascade)
+}
+
+model PaymentOrder {
+  id                      Int             @id @default(autoincrement())
+  serviceContractId       Int
+  contractMilestoneId     Int?            @unique
+  provider                String          @default("stripe_connect")
+  providerPaymentIntentId String?
+  providerInvoiceId       String?
+  currency                String          @default("EUR")
+  amountTotalEur          Float
+  platformFeeEur          Float
+  payoutAmountEur         Float
+  status                  PaymentStatus
+  scheduledCaptureAt      DateTime?
+  capturedAt              DateTime?
+  dueDate                 DateTime?
+  createdAt               DateTime        @default(now())
+  serviceContract         ServiceContract @relation(fields: [serviceContractId], references: [id], onDelete: Cascade)
+  contractMilestone       ContractMilestone? @relation(fields: [contractMilestoneId], references: [id], onDelete: SetNull)
+  payout                  Payout?
+  escrowEntries           EscrowLedger[]
+  refunds                 Refund[]
+  invoices                Invoice[]
+
+  @@index([serviceContractId, status, dueDate])
+}
+
+model EscrowLedger {
+  id             Int          @id @default(autoincrement())
+  paymentOrderId Int
+  entryType      String
+  amountEur      Float
+  metadata       Json
+  createdAt      DateTime     @default(now())
+  paymentOrder   PaymentOrder @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
+
+  @@index([paymentOrderId, createdAt])
+}
+
+model Payout {
+  id             Int           @id @default(autoincrement())
+  paymentOrderId Int           @unique
+  workerProfileId Int
+  payoutAmountEur Float
+  status         PayoutStatus
+  releasedAt     DateTime?
+  paymentOrder   PaymentOrder  @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
+  workerProfile  WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+}
+
+model Refund {
+  id             Int          @id @default(autoincrement())
+  paymentOrderId Int
+  amountEur      Float
+  reason         String?
+  createdAt      DateTime     @default(now())
+  paymentOrder   PaymentOrder @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id                  Int               @id @default(autoincrement())
+  paymentOrderId      Int
+  serviceContractId   Int?
+  contractMilestoneId Int?
+  invoiceType         String
+  externalNumber      String?
+  providerInvoiceId   String?
+  invoiceStatus       InvoiceStatus     @default(draft)
+  amountEur           Float
+  issuedAt            DateTime          @default(now())
+  dueDate             DateTime?
+  paidAt              DateTime?
+  pdfUrl              String?
+  paymentTermsDays    PaymentTermsDays?
+  paymentTermsBase    PaymentTermsBase?
+  paymentOrder        PaymentOrder      @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
+  serviceContract     ServiceContract?  @relation(fields: [serviceContractId], references: [id], onDelete: SetNull)
+  contractMilestone   ContractMilestone? @relation(fields: [contractMilestoneId], references: [id], onDelete: SetNull)
+
+  @@index([invoiceStatus, dueDate, issuedAt])
+}
+
+model PairMetric {
+  id                    Int                 @id @default(autoincrement())
+  workerProfileId       Int
+  restaurantProfileId   Int
+  days12m               Int                 @default(0)
+  days24m               Int                 @default(0)
+  gross12mEur           Float               @default(0)
+  gross24mEur           Float               @default(0)
+  workerRevenueShare12m Float               @default(0)
+  workerRevenueShare24m Float               @default(0)
+  controlScore          Int                 @default(0)
+  lastRecomputedAt      DateTime            @default(now())
+  workerProfile         WorkerProfile       @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  restaurantProfile     RestaurantProfile   @relation(fields: [restaurantProfileId], references: [id], onDelete: Cascade)
+  complianceSnapshots   ComplianceSnapshot[]
+
+  @@unique([workerProfileId, restaurantProfileId])
+  @@index([restaurantProfileId, controlScore])
+}
+
+model PolicyRule {
+  id             Int                  @id @default(autoincrement())
+  policyKey      String               @unique
+  currentVersion String
+  thresholdsJson Json
+  createdAt      DateTime             @default(now())
+  snapshots      ComplianceSnapshot[]
+}
+
+model PlatformSetting {
+  settingKey String   @id
+  valueJson  Json
+  updatedAt  DateTime @updatedAt
+}
+
+model ComplianceSnapshot {
+  id               Int            @id @default(autoincrement())
+  pairMetricId     Int?
+  serviceRequestId Int?
+  policyRuleId     Int?
+  policyVersion    String
+  decisionState    MatchDecision
+  snapshotPayload  Json
+  createdAt        DateTime       @default(now())
+  pairMetric       PairMetric?    @relation(fields: [pairMetricId], references: [id], onDelete: SetNull)
+  serviceRequest   ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+  policyRule       PolicyRule?    @relation(fields: [policyRuleId], references: [id], onDelete: SetNull)
+  alerts           ComplianceAlert[]
+  agentDecisions   AgentDecision[]
+
+  @@index([decisionState, createdAt])
+}
+
+model ComplianceAlert {
+  id                  Int               @id @default(autoincrement())
+  workerProfileId     Int?
+  restaurantProfileId Int?
+  snapshotId          Int?
+  alertType           String
+  severity            AlertSeverity
+  alertMessage        String
+  status              AlertStatus       @default(open)
+  createdAt           DateTime          @default(now())
+  workerProfile       WorkerProfile?    @relation(fields: [workerProfileId], references: [id], onDelete: SetNull)
+  restaurantProfile   RestaurantProfile? @relation(fields: [restaurantProfileId], references: [id], onDelete: SetNull)
+  snapshot            ComplianceSnapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
+  manualReviews       ManualReview[]
+  agentDecisions      AgentDecision[]
+
+  @@index([status, severity, createdAt])
+}
+
+model ManualReview {
+  id                Int              @id @default(autoincrement())
+  complianceAlertId Int
+  reviewerUserId    Int
+  finalDecision     MatchDecision
+  reviewerNotes     String?
+  reviewedAt        DateTime         @default(now())
+  complianceAlert   ComplianceAlert  @relation(fields: [complianceAlertId], references: [id], onDelete: Cascade)
+  reviewer          User             @relation(fields: [reviewerUserId], references: [id], onDelete: Cascade)
+}
+
+model AgentJob {
+  id            Int             @id @default(autoincrement())
+  agentKey      String
+  targetType    String
+  targetId      String
+  status        String
+  payload       Json
+  createdAt     DateTime        @default(now())
+  decisions     AgentDecision[]
+
+  @@index([agentKey, status, createdAt])
+}
+
+model AgentDecision {
+  id                   Int                 @id @default(autoincrement())
+  agentJobId           Int?
+  complianceAlertId    Int?
+  complianceSnapshotId Int?
+  decisionKey          String
+  rationale            Json
+  createdAt            DateTime            @default(now())
+  agentJob             AgentJob?           @relation(fields: [agentJobId], references: [id], onDelete: SetNull)
+  complianceAlert      ComplianceAlert?    @relation(fields: [complianceAlertId], references: [id], onDelete: SetNull)
+  complianceSnapshot   ComplianceSnapshot? @relation(fields: [complianceSnapshotId], references: [id], onDelete: SetNull)
+}
+
+model ReviewEvent {
+  id                 Int             @id @default(autoincrement())
+  serviceContractId  Int
+  triggeredByUserId  Int
+  revieweeUserId     Int
+  status             String
+  createdAt          DateTime        @default(now())
+  serviceContract    ServiceContract @relation(fields: [serviceContractId], references: [id], onDelete: Cascade)
+  triggeredBy        User            @relation("ReviewEventTriggeredBy", fields: [triggeredByUserId], references: [id], onDelete: Cascade)
+  reviewee           User            @relation("ReviewEventReviewee", fields: [revieweeUserId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id              Int             @id @default(autoincrement())
+  serviceContractId Int
+  reviewerUserId  Int
+  revieweeUserId  Int
+  reliability     Int
+  punctuality     Int
+  professionalism Int
+  commentText     String?
+  createdAt       DateTime        @default(now())
+  serviceContract ServiceContract @relation(fields: [serviceContractId], references: [id], onDelete: Cascade)
+  reviewer        User            @relation("ReviewsWritten", fields: [reviewerUserId], references: [id], onDelete: Cascade)
+  reviewee        User            @relation("ReviewsReceived", fields: [revieweeUserId], references: [id], onDelete: Cascade)
+
+  @@index([revieweeUserId, createdAt])
+  @@unique([serviceContractId, reviewerUserId])
+}
+
+model ReviewAggregate {
+  id                 Int       @id @default(autoincrement())
+  userId             Int       @unique
+  reliabilityAvg     Float     @default(0)
+  punctualityAvg     Float     @default(0)
+  professionalismAvg Float     @default(0)
+  overallAvg         Float     @default(0)
+  reviewCount        Int       @default(0)
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NonRenewal {
+  id                  Int               @id @default(autoincrement())
+  restaurantProfileId Int
+  workerProfileId     Int
+  reason              String
+  effectiveDate       DateTime
+  restaurantProfile   RestaurantProfile @relation(fields: [restaurantProfileId], references: [id], onDelete: Cascade)
+  workerProfile       WorkerProfile     @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+}
+
+model EarningsScenario {
+  id                     Int       @id @default(autoincrement())
+  userId                 Int?
+  visitorKey             String?
+  audience               String
+  roleKey                String
+  yearsExperience        Int
+  currentNetMonthly      Float
+  forfettarioRate        Float
+  profitabilityCoefficient Float
+  employeeNetAnnual      Float
+  companyCostAnnual      Float
+  freelanceNetAnnual     Float
+  annualGain             Float
+  monthlyGain            Float
+  snapshot               Json
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  user                   User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, audience, createdAt])
+  @@index([visitorKey, audience, createdAt])
+}
+
+model AuditLog {
+  id             Int      @id @default(autoincrement())
+  actorUserId    Int?
+  actorEmail     String?
+  actionKey      String
+  targetTable    String?
+  targetId       String?
+  contextPayload Json
+  createdAt      DateTime @default(now())
+  actorUser      User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
+
+model OutboxEvent {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  eventKey    String
+  payload     Json
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([eventKey, sentAt])
+}

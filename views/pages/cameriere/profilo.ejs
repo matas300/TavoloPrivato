@@ -1,0 +1,169 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <section class="hero-panel mb-xl">
+        <div class="flex items-center gap-lg flex-wrap">
+          <div class="avatar avatar-xl"><%= user.initials %></div>
+          <div style="max-width:760px">
+            <span class="eyebrow mb-sm">Worker profile</span>
+            <h1 class="font-display font-bold" style="font-size:var(--fs-h1)"><%= user.name %></h1>
+            <p class="page-lead mt-sm"><%= user.headline %></p>
+            <div class="flex items-center gap-sm mt-md flex-wrap">
+              <div class="stars"><%- include('../../partials/stars', { rating: user.rating }) %></div>
+              <span class="text-sm text-muted"><%= user.rating %> su <%= user.ratingCount %> recensioni</span>
+              <% if (user.verificato) { %><span class="badge badge-olive">Profilo verificato</span><% } %>
+              <% if (user.safeHarborCandidate) { %><span class="badge badge-neutral">alta seniority</span><% } %>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <% if (prefillScenario) { %>
+        <div class="alert-box alert-info mb-xl">
+          <i data-lucide="sparkles" style="width:20px;height:20px;flex-shrink:0;color:var(--olive)"></i>
+          <div class="w-full">
+            <strong class="text-sm">Scenario importato dal simulatore</strong>
+            <p class="text-sm text-muted mt-sm"><%= prefillScenario.summary %></p>
+            <div class="metric-strip mt-md">
+              <div class="metric-pill">
+                <span>Headline suggerita</span>
+                <strong><%= prefillScenario.headline %></strong>
+              </div>
+              <div class="metric-pill">
+                <span>Target day rate</span>
+                <strong>EUR <%= prefillScenario.targetDayRateEur %></strong>
+              </div>
+              <div class="metric-pill">
+                <span>Delta annuo</span>
+                <strong>EUR <%= Math.abs(prefillScenario.targetAnnualGainEur).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="grid-2 mb-xl">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Identita professionale</h3>
+            <p class="text-sm text-muted mb-md"><%= user.bio %></p>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Esperienza</span>
+                <strong><%= user.esperienza %> anni</strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Day rate</span>
+                <strong><%= user.dayRateLabel %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Zone preferite</span>
+                <strong><%= user.preferredZones.join(' | ') %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Formati preferiti</span>
+                <strong><%= user.preferredFormats.join(' | ') %></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Fiscal & compliance</h3>
+            <div class="metric-strip mb-md">
+              <div class="metric-pill">
+                <span>Regime</span>
+                <strong><%= user.taxMode === 'forfettario' ? 'Forfettario' : 'Occasionale' %></strong>
+              </div>
+              <div class="metric-pill">
+                <span>YTD</span>
+                <strong>EUR <%= user.fiscalGrossYtdEur.toLocaleString('it-IT') %></strong>
+              </div>
+            </div>
+            <div class="progress mb-sm">
+              <div class="progress-bar <%= user.thresholdPct >= 90 ? 'progress-red' : user.thresholdPct >= 75 ? 'progress-terracotta' : 'progress-olive' %>" style="width:<%= Math.min(user.thresholdPct, 100) %>%"></div>
+            </div>
+            <div class="flex justify-between mb-md text-sm">
+              <span class="text-muted">soglia 5.000 EUR per occasionale</span>
+              <strong><%= user.thresholdPct %>%</strong>
+            </div>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Ex datori dichiarati</span>
+                <strong><%= user.exEmployers.length ? user.exEmployers.join(' | ') : 'nessuno' %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">P.IVA</span>
+                <strong><%= user.pivaLast4 ? 'registrata' : 'non registrata' %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Safe harbor</span>
+                <strong><%= user.safeHarborCandidate ? 'attenuante attiva' : 'non applicato' %></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Hard skills</h3>
+            <div class="stack-list mb-lg">
+              <% user.hardSkills.forEach(skill => { %>
+                <span class="badge badge-terracotta"><%= skill %></span>
+              <% }) %>
+            </div>
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Soft skills</h3>
+            <div class="stack-list">
+              <% user.softSkills.forEach(skill => { %>
+                <span class="badge badge-neutral"><%= skill %></span>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">CV operativo</h3>
+            <div class="stack-list mb-lg">
+              <% user.qualifiche.forEach(skill => { %>
+                <span class="badge badge-terracotta"><%= skill %></span>
+              <% }) %>
+            </div>
+            <div class="detail-list mb-lg">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Lingue</span>
+                <strong><%= user.lingue.join(' | ') %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Certificazioni</span>
+                <strong><%= user.certifications.join(' | ') %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Completamento profilo</span>
+                <strong><%= user.profileCompleteness %>%</strong>
+              </div>
+            </div>
+            <div class="surface-muted">
+              <div class="text-tiny text-muted mb-sm">Disponibilita settimanale</div>
+              <div class="stack-list">
+                <% const days = [['lun', 'Lun'], ['mar', 'Mar'], ['mer', 'Mer'], ['gio', 'Gio'], ['ven', 'Ven'], ['sab', 'Sab'], ['dom', 'Dom']]; %>
+                <% days.forEach(([key, label]) => { %>
+                  <span class="badge <%= user.disponibilita[key] ? 'badge-olive' : 'badge-neutral' %>"><%= label %></span>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

@@ -1,0 +1,46 @@
+<%- include('../../partials/head') %>
+<%- include('../../partials/pub-nav') %>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="grid-2" style="align-items:center">
+      <div>
+        <p class="section-label">Per ristoratori</p>
+        <h1>Il cameriere giusto, <em>quando serve.</em><br>Senza sorprese in busta paga.</h1>
+        <p class="hero-subtitle">Paghi solo il lavoro fatto. Zero contributi, zero TFR, zero straordinari. Se non funziona, il giorno dopo provi un altro.</p>
+        <div class="flex gap-md flex-wrap">
+          <a href="/register" class="btn btn-primary btn-lg">Trova il tuo cameriere</a>
+          <a href="/simulatore-ristoratori" class="btn btn-outline btn-lg">Simula il costo</a>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="max-width:400px;margin:0 auto">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Risparmio vs Dipendente</h3>
+            <div style="padding:var(--space-md);background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:var(--space-md)">
+              <div class="flex justify-between items-center mb-sm">
+                <span class="text-sm">Dipendente fisso (costo annuo)</span>
+                <span class="font-semibold" style="color:var(--red)">&euro;35.000+</span>
+              </div>
+              <div class="text-tiny text-muted">RAL + contributi + TFR + ferie + malattia + 13&ordf;/14&ordf;</div>
+            </div>
+            <div style="padding:var(--space-md);background:var(--olive-glow);border-radius:var(--radius-md);border:1px solid rgba(90,122,58,0.2)">
+              <div class="flex justify-between items-center mb-sm">
+                <span class="text-sm">Con TavoloLibero (stesse giornate)</span>
+                <span class="font-semibold" style="color:var(--olive)">&euro;22.000</span>
+              </div>
+              <div class="text-tiny text-muted">Solo giornate effettivamente lavorate</div>
+            </div>
+            <div class="text-center mt-lg">
+              <div class="font-display font-bold" style="font-size:var(--fs-h2);color:var(--olive)">-37%</div>
+              <div class="text-sm text-muted">di costo del personale</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../../partials/pub-footer') %>
+<%- include('../../partials/foot') %>

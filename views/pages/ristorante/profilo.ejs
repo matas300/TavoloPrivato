@@ -1,0 +1,140 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <section class="hero-panel mb-xl">
+        <div class="flex items-center gap-lg flex-wrap">
+          <div class="avatar avatar-xl avatar-olive"><%= user.initials %></div>
+          <div style="max-width:760px">
+            <span class="eyebrow mb-sm">Restaurant profile</span>
+            <h1 class="font-display font-bold" style="font-size:var(--fs-h1)"><%= user.name %></h1>
+            <p class="page-lead mt-sm"><%= user.brandStory %></p>
+            <div class="flex items-center gap-sm mt-md flex-wrap">
+              <div class="stars"><%- include('../../partials/stars', { rating: user.rating }) %></div>
+              <span class="text-sm text-muted"><%= user.rating %> su <%= user.ratingCount %> recensioni</span>
+              <span class="badge badge-neutral">ticket medio EUR <%= user.avgTicketEur %></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid-2 mb-xl">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Identita del locale</h3>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Tipologia</span>
+                <strong><%= user.tipoCucina %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Indirizzo</span>
+                <strong><%= user.indirizzo %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Capienza</span>
+                <strong><%= user.capienza %> coperti</strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Zona</span>
+                <strong><%= user.zona %></strong>
+              </div>
+            </div>
+            <div class="stack-list mt-md">
+              <% user.vibe.forEach(item => { %>
+                <span class="badge badge-terracotta"><%= item %></span>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Messaggio legale in prodotto</h3>
+            <p class="text-sm text-muted mb-md"><%= user.legalPositioning %></p>
+            <div class="note-list">
+              <div class="surface-muted">Lato UX il ristorante acquista un servizio di sala o evento, non un numero di ore da presidiare.</div>
+              <div class="surface-muted">Ogni pacchetto ha outcome chiari, fee flat e split payment gia configurato.</div>
+              <div class="surface-muted">Se il pair supera i guardrail interni il motore riduce visibilita, apre review o blocca il match.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-xl">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Pacchetti attivi</h3>
+            <% user.servicePackages.forEach(pkg => { %>
+              <div class="surface-muted mb-md">
+                <div class="flex justify-between items-start gap-md">
+                  <div>
+                    <div class="font-semibold"><%= pkg.name %></div>
+                    <div class="text-sm text-muted"><%= pkg.resultLabel %></div>
+                  </div>
+                  <strong>EUR <%= pkg.flatFeeEur %></strong>
+                </div>
+                <div class="stack-list mt-md">
+                  <% pkg.requiredSkills.forEach(skill => { %>
+                    <span class="badge badge-neutral"><%= skill %></span>
+                  <% }) %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Venue highlights</h3>
+            <div class="note-list mb-lg">
+              <% user.venueHighlights.forEach(highlight => { %>
+                <div class="surface-muted"><%= highlight %></div>
+              <% }) %>
+            </div>
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Prestazioni pubblicate</h3>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Richieste aperte</span>
+                <strong><%= requests.length %></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="flex justify-between items-center mb-md">
+            <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Top worker consigliati</h3>
+            <a href="/ristorante/cerca" class="btn btn-outline btn-sm">Apri ranking completo</a>
+          </div>
+          <div class="grid-3">
+            <% suggestedWorkers.forEach(worker => { %>
+              <div class="surface-muted">
+                <div class="flex items-center gap-sm mb-sm">
+                  <div class="avatar avatar-sm"><%= worker.initials %></div>
+                  <div>
+                    <div class="font-semibold"><%= worker.name %></div>
+                    <div class="text-tiny text-muted"><%= worker.matchScore %>/100</div>
+                  </div>
+                </div>
+                <p class="text-sm text-muted mb-sm"><%= worker.headline %></p>
+                <div class="stack-list">
+                  <% worker.qualifiche.slice(0, 2).forEach(skill => { %>
+                    <span class="badge badge-terracotta"><%= skill %></span>
+                  <% }) %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

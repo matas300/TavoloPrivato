@@ -1,0 +1,42 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up" style="max-width:600px">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-display font-semibold mb-lg" style="font-size:var(--fs-h3)">Configurazione Commissioni</h3>
+          <form id="comm-form">
+            <div class="form-group">
+              <label class="form-label">Servizio singolo (pranzo/cena)</label>
+              <div class="flex items-center gap-sm">
+                <span class="text-sm">&euro;</span>
+                <input class="form-input" type="number" name="servizio" value="<%= commissioni.servizio %>" style="max-width:100px">
+                <span class="text-sm text-muted">per turno</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Giornata intera (full-day)</label>
+              <div class="flex items-center gap-sm">
+                <span class="text-sm">&euro;</span>
+                <input class="form-input" type="number" name="giornata" value="<%= commissioni.giornata %>" style="max-width:100px">
+                <span class="text-sm text-muted">per turno</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Evento speciale</label>
+              <div class="flex items-center gap-sm">
+                <span class="text-sm">&euro;</span>
+                <input class="form-input" type="number" name="evento" value="<%= commissioni.evento %>" style="max-width:100px">
+                <span class="text-sm text-muted">per turno</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="saveCommissioni()">Salva Commissioni</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

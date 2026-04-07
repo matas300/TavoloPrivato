@@ -1,0 +1,104 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="grid-4 mb-xl">
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= walletBalance %></div>
+          <div class="stat-label">Saldo wallet</div>
+          <button class="btn btn-sm btn-outline mt-md" onclick="preleva()">Preleva</button>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= totalEarned.toLocaleString('it-IT') %></div>
+          <div class="stat-label">Payout chiusi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= totalPlatformFees.toLocaleString('it-IT') %></div>
+          <div class="stat-label">Fee piattaforma trattenute</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label mb-sm">Soglia 5.000 EUR</div>
+          <div class="progress mb-sm">
+            <div class="progress-bar <%= pct5k >= 90 ? 'progress-red' : pct5k >= 75 ? 'progress-terracotta' : 'progress-olive' %>" style="width:<%= Math.min(pct5k, 100) %>%"></div>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-tiny text-muted">YTD EUR <%= profile.fiscalGrossYtdEur.toLocaleString('it-IT') %></span>
+            <span class="text-tiny font-semibold"><%= pct5k %>%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-xl">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Fiscal runway</h3>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Regime attuale</span>
+                <strong><%= profile.taxMode === 'forfettario' ? 'Forfettario' : 'Occasionale' %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Lordo YTD</span>
+                <strong>EUR <%= profile.fiscalGrossYtdEur.toLocaleString('it-IT') %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Proiezione annua</span>
+                <strong>EUR <%= projectedYearly.toLocaleString('it-IT') %></strong>
+              </div>
+            </div>
+            <% if (profile.taxMode === 'autonomo_occasionale' && projectedYearly > 5000) { %>
+              <div class="alert-box alert-warning mt-md" style="margin-bottom:0">
+                <div>
+                  <strong>Passaggio consigliato</strong>
+                  <p class="text-sm text-muted">La proiezione supera i 5.000 EUR. Apri forfettario e riduci l esposizione su un solo locale.</p>
+                  <a href="/cameriere/guida-piva" class="btn btn-sm btn-outline mt-sm">Apri guida P.IVA</a>
+                </div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Lettura pagamenti</h3>
+            <div class="note-list">
+              <div class="surface-muted">Il payout che vedi e il netto professionista dopo la service fee della piattaforma.</div>
+              <div class="surface-muted">Il ristorante paga un costo totale unico per prestazione; lo split avviene automaticamente sul backend.</div>
+              <div class="surface-muted">Per ogni pair il sistema continua a monitorare concentrazione del fatturato e continuita del rapporto.</div>
+            </div>
+            <div class="surface-muted mt-md">
+              <strong>Contratti lunghi visibili</strong><br>
+              <span class="text-sm text-muted">Se un locale ti propone un ingaggio 3-8 mesi, ora trovi PDF, milestone e scadenze anche da qui.</span>
+              <a href="/cameriere/contratti-lunghi" class="btn btn-outline btn-sm mt-md">Apri contratti lunghi</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Storico payout</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Data</th><th>Ristorante</th><th>Pacchetto</th><th>Netto worker</th><th>Fee</th><th>Totale ristorante</th><th>Stato</th></tr></thead>
+          <tbody>
+            <% payments.forEach(item => { %>
+              <tr>
+                <td><%= item.contratto.data %></td>
+                <td><%= item.ristorante.name %></td>
+                <td><%= item.package ? item.package.name : item.contratto.tipo %></td>
+                <td class="font-semibold stat-positive">EUR <%= item.workerNet %></td>
+                <td>EUR <%= item.contratto.commissione %></td>
+                <td>EUR <%= item.totalCost %></td>
+                <td><span class="badge badge-olive"><%= item.payoutLabel %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

@@ -1,0 +1,99 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="grid-4 mb-xl">
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= totalTransactions.toLocaleString('it-IT') %></div>
+          <div class="stat-label">Volume transato</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= totalCommissions.toLocaleString('it-IT') %></div>
+          <div class="stat-label">Service fee</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= complianceOverview.totalAlerts %></div>
+          <div class="stat-label">Alert compliance</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= complianceOverview.openHigh %></div>
+          <div class="stat-label">Alert alta severita</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-xl">
+        <div class="hero-panel">
+          <span class="eyebrow mb-md">Marketplace control</span>
+          <h2 class="font-display font-bold mb-sm" style="font-size:var(--fs-h2)">Motore operativo multi-agent</h2>
+          <p class="page-lead">Admin e Compliance governano concentrazione del fatturato, continuita pair e segnali di etero-organizzazione. I profili non vengono solo moderati: vengono ruotati, rallentati o bloccati in base ai guardrail.</p>
+          <div class="sim-action-buttons mt-lg">
+            <a href="/admin/legal-billing" class="btn btn-primary btn-sm">Apri Legal & Billing</a>
+            <a href="/admin/blueprint" class="btn btn-outline btn-sm">Apri architecture view</a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Base attiva</h3>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="text-sm text-muted">Worker attivi</span>
+                <strong><%= camerieriCount %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Ristoranti attivi</span>
+                <strong><%= ristorantiCount %></strong>
+              </div>
+              <div class="detail-row">
+                <span class="text-sm text-muted">Alert media severita</span>
+                <strong><%= complianceOverview.openMedium %></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="flex justify-between items-center mb-md">
+            <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Alert prioritari</h3>
+            <a href="/admin/alert" class="btn btn-outline btn-sm">Apri console</a>
+          </div>
+          <% alerts.forEach(alert => { %>
+            <div class="card mb-md" style="border-left:3px solid <%= alert.severity === 'alta' ? 'var(--red)' : 'var(--yellow)' %>">
+              <div class="card-body">
+                <div class="flex items-center gap-sm mb-sm flex-wrap">
+                  <span class="badge <%= alert.severity === 'alta' ? 'badge-red' : 'badge-yellow' %>"><%= alert.severity %></span>
+                  <span class="badge badge-neutral"><%= alert.tipo %></span>
+                  <span class="text-tiny text-muted"><%= alert.data %></span>
+                </div>
+                <div class="font-semibold mb-xs"><%= alert.title %></div>
+                <p class="text-sm text-muted mb-sm"><%= alert.desc %></p>
+                <p class="text-sm"><strong>Next action:</strong> <%= alert.recommendation %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+        <div>
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Ladder di decisione</h3>
+          <div class="card">
+            <div class="card-body">
+              <div class="note-list">
+                <div class="surface-muted"><strong>allow</strong><br><span class="text-sm text-muted">match proponibile senza review</span></div>
+                <div class="surface-muted"><strong>warn</strong><br><span class="text-sm text-muted">visibile ma con rotazione consigliata</span></div>
+                <div class="surface-muted"><strong>manual review</strong><br><span class="text-sm text-muted">apre case admin con snapshot pair</span></div>
+                <div class="surface-muted"><strong>soft stop</strong><br><span class="text-sm text-muted">match rallentato o non proposto automaticamente</span></div>
+                <div class="surface-muted"><strong>hard stop</strong><br><span class="text-sm text-muted">blocca nuovi ingaggi sul pair</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

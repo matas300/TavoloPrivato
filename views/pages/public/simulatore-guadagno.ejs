@@ -1,0 +1,308 @@
+<%- include('../../partials/head') %>
+<%- include('../../partials/pub-nav') %>
+
+<section class="hero hero-simulator">
+  <div class="hero-content">
+    <div class="sim-shell">
+      <div class="sim-panel sim-panel-form fade-in-up">
+        <div class="sim-audience-switch">
+          <a href="/simulatore-guadagno" class="sim-audience-pill <%= simulatorPage.audience === 'worker' ? 'active' : '' %>">Professionisti</a>
+          <a href="/simulatore-ristoratori" class="sim-audience-pill <%= simulatorPage.audience === 'restaurant' ? 'active' : '' %>">Ristoratori</a>
+        </div>
+
+        <p class="section-label"><%= simulatorPage.heroLabel %></p>
+        <h1><%- simulatorPage.heroTitleHtml %></h1>
+        <p class="hero-subtitle"><%= simulatorPage.heroSubtitle %></p>
+
+        <div class="sim-inline-actions sim-top-actions">
+          <a href="<%= simulatorPage.switchHref %>" class="btn btn-ghost btn-sm"><%= simulatorPage.switchLabel %></a>
+          <span class="text-tiny text-muted">Stesso motore, copy orientato al lato che converte.</span>
+        </div>
+
+        <form id="earnings-simulator-form" class="sim-form">
+          <div class="form-group">
+            <label class="form-label" for="sim-role">Ruolo</label>
+            <select class="form-input form-select" id="sim-role" name="ruolo">
+              <% simulatorMeta.roles.forEach(role => { %>
+                <option value="<%= role.key %>" <%= simulatorInitial.input.ruolo === role.key ? 'selected' : '' %>>
+                  <%= role.label %> &middot; <%= role.ccnlLevel %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="grid-2" style="gap:var(--space-md)">
+            <div class="form-group">
+              <label class="form-label" for="sim-years">Anni di esperienza</label>
+              <input class="form-input" id="sim-years" name="anni_esperienza" type="number" min="0" max="40" value="<%= simulatorInitial.input.anniEsperienza %>">
+              <p class="text-tiny text-muted mt-sm">0-2 junior &middot; 3-5 mid &middot; 6+ senior</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sim-salary">Stipendio netto mensile attuale</label>
+              <div class="sim-money-input">
+                <span>EUR</span>
+                <input class="form-input" id="sim-salary" name="stipendio_netto_mensile_attuale" type="number" min="0" step="10" value="<%= simulatorInitial.input.stipendioNettoMensileAttuale %>">
+              </div>
+            </div>
+          </div>
+
+          <div class="sim-inline-actions">
+            <button class="btn btn-outline btn-sm" type="button" id="sim-use-benchmark"><%= simulatorPage.benchmarkButtonLabel %></button>
+            <div class="text-tiny text-muted" id="sim-benchmark-label">
+              Benchmark ruolo: EUR <%= simulatorInitial.referenceSnapshot.suggestedNetMonthly %>/mese
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Aliquota forfettario</label>
+            <div class="sim-toggle-grid">
+              <% simulatorMeta.aliquoteForfettario.forEach(item => { %>
+                <label class="sim-toggle">
+                  <input type="radio" name="aliquota_forfettario" value="<%= item.value %>" <%= simulatorInitial.input.aliquotaForfettario === item.value ? 'checked' : '' %>>
+                  <span>
+                    <strong><%= item.label %></strong>
+                    <small><%= item.description %></small>
+                  </span>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+        </form>
+
+        <div class="sim-market-snapshot">
+          <div class="sim-market-header">
+            <div>
+              <p class="text-tiny text-muted"><%= simulatorPage.referenceLabel %></p>
+              <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)" id="sim-role-label">
+                <%= simulatorInitial.input.ruoloLabel %> &middot; <%= simulatorInitial.input.seniorityLabel %>
+              </h3>
+            </div>
+            <span class="badge badge-terracotta" id="sim-level-pill"><%= simulatorInitial.input.ccnlLevel %></span>
+          </div>
+          <div class="sim-chip-grid">
+            <div class="sim-chip">
+              <span class="sim-chip-label">Netto indicativo</span>
+              <strong id="sim-market-net">EUR <%= simulatorInitial.referenceSnapshot.marketNetMonthlyRange[0] %> - EUR <%= simulatorInitial.referenceSnapshot.marketNetMonthlyRange[1] %></strong>
+            </div>
+            <div class="sim-chip">
+              <span class="sim-chip-label">RAL tipica</span>
+              <strong id="sim-market-ral">EUR <%= simulatorInitial.referenceSnapshot.marketRalRange[0] %> - EUR <%= simulatorInitial.referenceSnapshot.marketRalRange[1] %></strong>
+            </div>
+            <div class="sim-chip">
+              <span class="sim-chip-label">Costo azienda</span>
+              <strong id="sim-market-cost">EUR <%= simulatorInitial.referenceSnapshot.marketCompanyCostRange[0] %> - EUR <%= simulatorInitial.referenceSnapshot.marketCompanyCostRange[1] %></strong>
+            </div>
+          </div>
+          <div class="sim-notes" id="sim-role-notes">
+            <% simulatorInitial.referenceSnapshot.notes.forEach(note => { %>
+              <p class="text-sm text-muted"><%= note %></p>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <div class="sim-panel sim-panel-results fade-in-up" style="animation-delay:0.08s">
+        <div class="sim-banner" id="sim-banner"><%= simulatorInitial.banner %></div>
+
+        <div class="sim-save-row">
+          <div class="sim-action-buttons">
+            <button type="button" class="btn btn-primary" id="sim-save-scenario"><%= simulatorPage.saveButtonLabel %></button>
+            <button type="button" class="btn btn-outline" id="sim-export-pdf">Esporta PDF</button>
+            <button type="button" class="btn btn-ghost" id="sim-use-scenario"><%= simulatorPage.audience === 'restaurant' ? 'Usa questo scenario' : 'Importa nel profilo' %></button>
+          </div>
+          <div class="text-sm text-muted" id="sim-save-status">
+            <% if (savedScenarios.length) { %>
+              Ultimo scenario salvato disponibile sotto.
+            <% } else { %>
+              Salva il confronto per ritrovarlo in questa sessione o nel tuo account.
+            <% } %>
+          </div>
+        </div>
+
+        <div class="sim-warning-list" id="sim-warning-list">
+          <% simulatorInitial.warnings.forEach(warning => { %>
+            <div class="sim-warning-item"><%= warning %></div>
+          <% }) %>
+        </div>
+
+        <div class="sim-result-grid">
+          <article class="sim-result-card">
+            <span class="sim-result-kicker"><%= simulatorPage.employeeKicker %></span>
+            <strong class="sim-result-value">
+              <span class="sim-result-unit">EUR</span>
+              <span class="sim-result-amount" id="sim-employee-month"><%= simulatorInitial.dipendente.nettoMensile.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></span>
+            </strong>
+            <p class="text-sm text-muted">Mensile su 14 mensilita</p>
+            <p class="sim-result-sub" id="sim-employee-year">EUR <%= simulatorInitial.dipendente.nettoAnnuo.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %> annui</p>
+          </article>
+
+          <article class="sim-result-card sim-result-card-accent">
+            <span class="sim-result-kicker"><%= simulatorPage.companyKicker %></span>
+            <strong class="sim-result-value">
+              <span class="sim-result-unit">EUR</span>
+              <span class="sim-result-amount" id="sim-company-cost"><%= simulatorInitial.azienda.costoTotale.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></span>
+            </strong>
+            <p class="text-sm text-muted">Costo azienda totale annuo</p>
+            <p class="sim-result-sub">RAL stimata: <span id="sim-estimated-ral">EUR <%= simulatorInitial.dipendente.ralStimata.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></span></p>
+          </article>
+
+          <article class="sim-result-card sim-result-card-olive">
+            <span class="sim-result-kicker"><%= simulatorPage.freelanceKicker %></span>
+            <strong class="sim-result-value">
+              <span class="sim-result-unit">EUR</span>
+              <span class="sim-result-amount" id="sim-freelance-month"><%= simulatorInitial.freelance.nettoMensile.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></span>
+            </strong>
+            <p class="text-sm text-muted">Mensile su 12 mesi</p>
+            <p class="sim-result-sub" id="sim-freelance-year">EUR <%= simulatorInitial.freelance.nettoAnnuo.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %> annui</p>
+          </article>
+        </div>
+
+        <div class="sim-delta-strip">
+          <div>
+            <span class="sim-chip-label">Delta mensile</span>
+            <strong id="sim-delta-month"><%= simulatorInitial.delta.guadagnoMensile >= 0 ? '+' : '-' %>EUR <%= Math.abs(simulatorInitial.delta.guadagnoMensile).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong>
+          </div>
+          <div>
+            <span class="sim-chip-label">Delta annuo</span>
+            <strong id="sim-delta-year"><%= simulatorInitial.delta.guadagnoAnnuo >= 0 ? '+' : '-' %>EUR <%= Math.abs(simulatorInitial.delta.guadagnoAnnuo).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong>
+          </div>
+          <div>
+            <span class="sim-chip-label">Soglia forfettario</span>
+            <strong id="sim-forfettario-limit"><%= simulatorInitial.freelance.withinForfettarioLimit ? 'Entro 85.000 EUR' : 'Oltre 85.000 EUR' %></strong>
+          </div>
+        </div>
+
+        <div class="sim-cta-rail">
+          <div>
+            <p class="section-label" style="margin-bottom:var(--space-xs)">Conversione</p>
+            <h3 class="font-display font-semibold" style="font-size:var(--fs-h3);margin-bottom:var(--space-sm)"><%= simulatorPage.ctaTitle %></h3>
+            <p class="text-sm text-muted"><%= simulatorPage.ctaBody %></p>
+          </div>
+          <div class="sim-inline-actions">
+            <a href="<%= simulatorPage.ctaPrimaryHref %>" class="btn btn-primary"><%= simulatorPage.ctaPrimaryLabel %></a>
+            <a href="<%= simulatorPage.ctaSecondaryHref %>" class="btn btn-outline"><%= simulatorPage.ctaSecondaryLabel %></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="sim-saved-head">
+    <div>
+      <p class="section-label"><%= simulatorPage.savedSectionLabel %></p>
+      <h2 class="section-title" style="margin-bottom:var(--space-sm)"><%= simulatorPage.savedSectionHeading %></h2>
+      <p class="page-lead"><%= currentUser ? 'Gli scenari sono legati al tuo account attivo e restano riutilizzabili nelle prossime sessioni.' : 'Se non hai ancora un account, gli scenari restano in questa sessione e diventano una leva immediata appena ti registri.' %></p>
+    </div>
+  </div>
+
+  <div class="sim-saved-grid" id="sim-saved-grid">
+    <% if (savedScenarios.length) { %>
+      <% savedScenarios.forEach(item => { %>
+        <button
+          type="button"
+          class="sim-saved-card"
+          data-scenario-role="<%= item.snapshot.input.ruolo %>"
+          data-scenario-years="<%= item.snapshot.input.anniEsperienza %>"
+          data-scenario-net="<%= item.snapshot.input.stipendioNettoMensileAttuale %>"
+          data-scenario-rate="<%= item.snapshot.input.aliquotaForfettario %>"
+        >
+          <span class="sim-saved-date"><%= new Date(item.createdAt).toLocaleDateString('it-IT') %></span>
+          <strong><%= item.snapshot.input.ruoloLabel %> &middot; <%= item.snapshot.input.seniorityLabel %></strong>
+          <p class="text-sm text-muted">Netto attuale <%= item.snapshot.input.stipendioNettoMensileAttuale.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %> EUR/mese</p>
+          <div class="sim-saved-metrics">
+            <span><%= item.companyCostAnnual.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %> EUR costo azienda</span>
+            <span><%= item.annualGain >= 0 ? '+' : '-' %><%= Math.abs(item.annualGain).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %> EUR annui</span>
+          </div>
+        </button>
+      <% }) %>
+    <% } else { %>
+      <div class="sim-empty-state" id="sim-empty-state">
+        <strong><%= simulatorPage.savedEmptyTitle %></strong>
+        <p class="text-sm text-muted"><%= simulatorPage.savedEmptyText %></p>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<section class="section">
+  <div class="grid-2" style="gap:var(--space-xl)">
+    <article class="card card-body sim-breakdown-card">
+      <div class="sim-breakdown-head">
+        <p class="section-label" style="margin-bottom:var(--space-xs)"><%= simulatorPage.breakdownEmployeeTitle %></p>
+        <h2 class="font-display font-semibold" style="font-size:var(--fs-h2)"><%= simulatorPage.breakdownEmployeeHeading %></h2>
+      </div>
+      <div class="sim-breakdown-list">
+        <div class="sim-breakdown-row"><span>Netto annuo percepito</span><strong id="sim-breakdown-employee-net">EUR <%= simulatorInitial.dipendente.nettoAnnuo.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+        <div class="sim-breakdown-row"><span>RAL stimata</span><strong id="sim-breakdown-ral">EUR <%= simulatorInitial.dipendente.ralStimata.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+        <div class="sim-breakdown-row"><span>INPS azienda 30%</span><strong id="sim-breakdown-employer-inps">EUR <%= simulatorInitial.azienda.contributiInps.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+        <div class="sim-breakdown-row"><span>INAIL 3%</span><strong id="sim-breakdown-inail">EUR <%= simulatorInitial.azienda.premioInail.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+        <div class="sim-breakdown-row"><span>TFR 7,4%</span><strong id="sim-breakdown-tfr">EUR <%= simulatorInitial.azienda.tfr.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+        <div class="sim-breakdown-row sim-breakdown-row-total"><span>Costo azienda totale</span><strong id="sim-breakdown-company-cost">EUR <%= simulatorInitial.azienda.costoTotale.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+      </div>
+    </article>
+
+    <article class="card card-body sim-breakdown-card">
+      <div class="sim-breakdown-head">
+        <p class="section-label" style="margin-bottom:var(--space-xs)"><%= simulatorPage.breakdownFreelanceTitle %></p>
+        <h2 class="font-display font-semibold" style="font-size:var(--fs-h2)"><%= simulatorPage.breakdownFreelanceHeading %></h2>
+      </div>
+      <div class="sim-breakdown-list">
+        <div class="sim-breakdown-row"><span>Fatturato annuo</span><strong id="sim-breakdown-revenue">EUR <%= simulatorInitial.freelance.fatturatoAnnuo.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+        <div class="sim-breakdown-row"><span>Coefficiente redditivita</span><strong id="sim-breakdown-coefficient"><%= Math.round(simulatorInitial.freelance.coefficienteRedditivita * 100) %>%</strong></div>
+        <div class="sim-breakdown-row"><span>Reddito imponibile lordo</span><strong id="sim-breakdown-taxable-gross">EUR <%= simulatorInitial.freelance.redditoImponibileLordo.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+        <div class="sim-breakdown-row"><span>Contributi INPS 26,07%</span><strong id="sim-breakdown-freelance-inps">EUR <%= simulatorInitial.freelance.contributiInps.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+        <div class="sim-breakdown-row"><span>Imposta sostitutiva</span><strong id="sim-breakdown-tax">EUR <%= simulatorInitial.freelance.tasseSostitutive.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+        <div class="sim-breakdown-row sim-breakdown-row-total"><span>Netto annuo freelance</span><strong id="sim-breakdown-freelance-net">EUR <%= simulatorInitial.freelance.nettoAnnuo.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section-bg">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="grid-2" style="gap:var(--space-xl);align-items:start">
+      <div class="card card-body">
+        <p class="section-label">Assunzioni del modello</p>
+        <h2 class="font-display font-semibold" style="font-size:var(--fs-h2);margin-bottom:var(--space-md)">Costanti inserite nel calcolo</h2>
+        <div class="sim-assumption-list">
+          <div class="sim-assumption-item"><span>Mensilita dipendente</span><strong>14</strong></div>
+          <div class="sim-assumption-item"><span>Gross-up netto - lordo</span><strong>+25%</strong></div>
+          <div class="sim-assumption-item"><span>INPS azienda</span><strong>30%</strong></div>
+          <div class="sim-assumption-item"><span>INAIL medio ristorazione</span><strong>3%</strong></div>
+          <div class="sim-assumption-item"><span>TFR</span><strong>7,4%</strong></div>
+          <div class="sim-assumption-item"><span>Coefficiente redditivita default</span><strong>67%</strong></div>
+          <div class="sim-assumption-item"><span>INPS Gestione Separata</span><strong>26,07%</strong></div>
+          <div class="sim-assumption-item"><span>Soglia ricavi forfettario</span><strong>85.000 EUR</strong></div>
+        </div>
+      </div>
+
+      <div class="card card-body">
+        <p class="section-label">Nota operativa</p>
+        <h2 class="font-display font-semibold" style="font-size:var(--fs-h2);margin-bottom:var(--space-md)">Come leggere il simulatore</h2>
+        <div class="sim-notes">
+          <p class="text-sm text-muted">Il modello mantiene costante la spesa del ristorante e confronta due configurazioni: dipendente tradizionale e professionista in regime forfettario.</p>
+          <p class="text-sm text-muted">Le percentuali usate sono intenzionalmente conservative e servono come stima commerciale e orientativa. Non sostituiscono un cedolino, un preventivo di consulenza o un parere professionale personalizzato.</p>
+          <p class="text-sm text-muted">Per sommelier e barman i benchmark mostrati sono tarati su locali premium, fine dining, cocktail bar strutturati e hotellerie di fascia alta, non sulla media generica del settore.</p>
+          <p class="text-sm text-muted"><%= simulatorPage.finalNote %></p>
+          <div class="sim-inline-actions" style="margin-top:var(--space-md)">
+            <a href="<%= simulatorPage.ctaPrimaryHref %>" class="btn btn-primary"><%= simulatorPage.ctaPrimaryLabel %></a>
+            <a href="<%= simulatorPage.ctaSecondaryHref %>" class="btn btn-outline"><%= simulatorPage.ctaSecondaryLabel %></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  window.TL_SIMULATOR_META = <%- JSON.stringify(simulatorMeta) %>;
+  window.TL_SIMULATOR_INITIAL = <%- JSON.stringify(simulatorInitial) %>;
+  window.TL_SIMULATOR_PAGE = <%- JSON.stringify(simulatorPage) %>;
+  window.TL_SIMULATOR_SAVED = <%- JSON.stringify(savedScenarios) %>;
+</script>
+<script src="/js/earnings-simulator-page.js"></script>
+
+<%- include('../../partials/pub-footer') %>
+<%- include('../../partials/foot') %>

@@ -1,0 +1,115 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="flex justify-between items-center mb-xl">
+        <div>
+          <span class="eyebrow mb-sm">Service requests</span>
+          <p class="page-lead">Ogni richiesta viene pubblicata come prestazione a risultato con split payment gia leggibile per ristorante e professionista.</p>
+        </div>
+        <div class="flex gap-sm flex-wrap">
+          <a class="btn btn-outline" href="/ristorante/contratti-lunghi"><i data-lucide="calendar-range" style="width:16px;height:16px"></i> Contratto lungo</a>
+          <button class="btn btn-primary" onclick="document.getElementById('new-annuncio-form').classList.toggle('hidden')"><i data-lucide="plus" style="width:16px;height:16px"></i> Nuova prestazione</button>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="card-body">
+          <div class="flex justify-between items-start gap-lg flex-wrap">
+            <div style="max-width:760px">
+              <span class="eyebrow mb-sm">Nuovo flusso</span>
+              <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Hai bisogno di copertura per 3-8 mesi?</h3>
+              <p class="text-sm text-muted mt-sm">Usa la nuova vista <strong>Contratti Lunghi</strong> per generare milestone mensili, termini a 0/15/30/45 giorni e PDF contrattuale pronto da firmare.</p>
+            </div>
+            <a class="btn btn-primary" href="/ristorante/contratti-lunghi">Apri contratti lunghi</a>
+          </div>
+        </div>
+      </div>
+
+      <% if (prefillScenario) { %>
+        <div class="alert-box alert-info mb-xl">
+          <i data-lucide="sparkles" style="width:20px;height:20px;flex-shrink:0;color:var(--olive)"></i>
+          <div>
+            <strong class="text-sm">Brief precompilato dal simulatore</strong>
+            <p class="text-sm text-muted mt-sm"><%= prefillScenario.summary %></p>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="card mb-xl <%= prefillScenario ? '' : 'hidden' %>" id="new-annuncio-form">
+        <div class="card-body">
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Nuova prestazione</h3>
+          <form method="POST" action="/api/annunci" onsubmit="event.preventDefault();showToast('Prestazione pubblicata in demo');this.closest('.card').classList.add('hidden')">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Data</label><input class="form-input" type="date" name="data" value="<%= prefillScenario ? prefillScenario.data : '' %>" required></div>
+              <div class="form-group"><label class="form-label">Formato servizio</label>
+                <select class="form-input form-select" name="tipo">
+                  <option <%= prefillScenario && prefillScenario.tipo === 'pranzo' ? 'selected' : '' %>>pranzo</option>
+                  <option <%= (!prefillScenario || prefillScenario.tipo === 'cena') ? 'selected' : '' %>>cena</option>
+                  <option <%= prefillScenario && prefillScenario.tipo === 'full-day' ? 'selected' : '' %>>full-day</option>
+                  <option <%= prefillScenario && prefillScenario.tipo === 'evento' ? 'selected' : '' %>>evento</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Fee flat ristorante</label><input class="form-input" type="number" name="budget" placeholder="150" value="<%= prefillScenario ? prefillScenario.budget : '' %>" required></div>
+            </div>
+            <div class="form-group"><label class="form-label">Descrivi il risultato</label><textarea class="form-input" rows="3" name="desc" placeholder="Es. gestione sala weekend con chiusura servizio e reset operativo" required><%= prefillScenario ? prefillScenario.desc : '' %></textarea></div>
+            <div class="flex gap-md">
+              <button type="submit" class="btn btn-primary">Pubblica</button>
+              <button type="button" class="btn btn-ghost" onclick="this.closest('.card').classList.add('hidden')">Annulla</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <% annunci.forEach(item => { %>
+        <div class="card mb-md">
+          <div class="card-body">
+            <div class="flex justify-between items-start gap-lg flex-wrap">
+              <div style="max-width:760px">
+                <div class="flex items-center gap-sm flex-wrap mb-sm">
+                  <span class="badge badge-neutral"><%= item.tipo %></span>
+                  <span class="badge badge-olive">aperto</span>
+                  <span class="badge badge-terracotta"><%= item.data %></span>
+                </div>
+                <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)"><%= item.package ? item.package.name : 'Prestazione di servizio' %></h3>
+                <p class="text-sm text-muted mt-sm"><%= item.package ? item.package.resultLabel : item.desc %></p>
+                <div class="stack-list mt-md">
+                  <% item.qualifiche.forEach(q => { %>
+                    <span class="badge badge-terracotta"><%= q %></span>
+                  <% }) %>
+                </div>
+              </div>
+
+              <div class="surface-muted" style="min-width:320px">
+                <div class="detail-list">
+                  <div class="detail-row">
+                    <span class="text-sm text-muted">Fee flat ristorante</span>
+                    <strong>EUR <%= item.budget %></strong>
+                  </div>
+                  <div class="detail-row">
+                    <span class="text-sm text-muted">Netto worker</span>
+                    <strong style="color:var(--olive)">EUR <%= item.workerNet %></strong>
+                  </div>
+                  <div class="detail-row">
+                    <span class="text-sm text-muted">Service fee</span>
+                    <strong>EUR <%= item.platformFee %></strong>
+                  </div>
+                </div>
+                <p class="text-sm text-muted mt-md"><%= item.legalSummary %></p>
+                <div class="flex gap-sm mt-md">
+                  <button class="btn btn-ghost btn-sm" onclick="showToast('Modifica prestazione in demo')">Modifica</button>
+                  <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="showToast('Prestazione chiusa in demo')">Chiudi</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

@@ -1,0 +1,198 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <section class="hero-panel mb-xl">
+        <div class="flex justify-between items-start gap-lg flex-wrap">
+          <div style="max-width:760px">
+            <span class="eyebrow mb-md">Restaurant cockpit</span>
+            <h1 class="font-display font-bold mb-sm" style="font-size:var(--fs-h1)"><%= profile.name %></h1>
+            <p class="page-lead"><%= profile.brandStory %></p>
+            <div class="metric-strip mt-lg">
+              <div class="metric-pill">
+                <span>Pacchetti attivi</span>
+                <strong><%= activePackages.length %></strong>
+              </div>
+              <div class="metric-pill">
+                <span>Ticket medio</span>
+                <strong>EUR <%= profile.avgTicketEur %></strong>
+              </div>
+              <div class="metric-pill">
+                <span>Roster</span>
+                <strong><%= roster.length %> worker</strong>
+              </div>
+              <div class="metric-pill">
+                <span>Vibe</span>
+                <strong><%= profile.vibe.slice(0, 2).join(' | ') %></strong>
+              </div>
+            </div>
+          </div>
+          <div class="surface-muted" style="max-width:360px">
+            <div class="text-tiny text-muted mb-sm">Posizionamento legale UX</div>
+            <div class="font-display font-bold mb-sm" style="font-size:var(--fs-h2);color:var(--terracotta)">Prestazioni a risultato</div>
+            <p class="text-sm text-muted"><%= profile.legalPositioning %></p>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid-4 mb-xl">
+        <div class="stat-card">
+          <div class="stat-value">EUR <%= monthSpend.toLocaleString('it-IT') %></div>
+          <div class="stat-label">Spesa chiusa</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= upcoming.length %></div>
+          <div class="stat-label">Prestazioni confermate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= complianceWatchlist.length %></div>
+          <div class="stat-label">Pair da monitorare</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= profile.rating %></div>
+          <div class="stat-label">Rating locale</div>
+          <div class="stars mt-xs"><%- include('../../partials/stars', { rating: profile.rating }) %></div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-xl">
+        <div>
+          <div class="flex justify-between items-center mb-md">
+            <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Prestazioni confermate</h3>
+            <a href="/ristorante/annunci" class="btn btn-outline btn-sm">Apri richieste</a>
+          </div>
+          <% if (upcoming.length === 0) { %>
+            <div class="surface-muted">
+              <p class="text-sm text-muted">Nessuna prestazione confermata. Pubblica o aggiorna un pacchetto per trovare nuovi profili.</p>
+            </div>
+          <% } else { %>
+            <% upcoming.forEach(item => { %>
+              <div class="card mb-md">
+                <div class="card-body">
+                  <div class="flex justify-between items-start gap-md">
+                    <div>
+                      <div class="flex items-center gap-sm mb-sm">
+                        <span class="score-pill"><%= item.worker.name %></span>
+                        <span class="badge <%= item.compliance.decision === 'allow' ? 'badge-olive' : item.compliance.decision === 'warn' ? 'badge-yellow' : 'badge-red' %>"><%= item.compliance.decision %></span>
+                      </div>
+                      <div class="font-semibold mb-xs"><%= item.data %> | <%= item.tipo %></div>
+                      <div class="text-sm text-muted"><%= item.worker.headline %></div>
+                    </div>
+                    <div class="text-right">
+                      <div class="font-semibold">EUR <%= item.compensoCam + item.commissione %></div>
+                      <div class="text-tiny text-muted">costo totale</div>
+                    </div>
+                  </div>
+                  <div class="detail-list mt-md">
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Netto worker</span>
+                      <strong style="color:var(--olive)">EUR <%= item.compensoCam %></strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Fee piattaforma</span>
+                      <strong>EUR <%= item.commissione %></strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-md">
+            <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Pacchetti attivi</h3>
+            <a href="/ristorante/cerca" class="btn btn-outline btn-sm">Apri matching</a>
+          </div>
+          <% activePackages.forEach(pkg => { %>
+            <div class="card mb-md">
+              <div class="card-body">
+                <div class="flex justify-between items-start gap-md">
+                  <div>
+                    <div class="font-semibold"><%= pkg.name %></div>
+                    <div class="text-sm text-muted"><%= pkg.resultLabel %></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-semibold" style="color:var(--terracotta)">EUR <%= pkg.flatFeeEur %></div>
+                    <div class="text-tiny text-muted"><%= pkg.serviceType %></div>
+                  </div>
+                </div>
+                <div class="stack-list mt-md">
+                  <% pkg.requiredSkills.forEach(skill => { %>
+                    <span class="badge badge-neutral"><%= skill %></span>
+                  <% }) %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Roster live</h3>
+          <% roster.forEach(worker => { %>
+            <div class="card mb-md">
+              <div class="card-body">
+                <div class="flex justify-between items-start gap-md">
+                  <div>
+                    <div class="flex items-center gap-sm mb-sm">
+                      <span class="font-semibold"><%= worker.name %></span>
+                      <span class="badge <%= worker.complianceUi.badge %>"><%= worker.complianceUi.label %></span>
+                      <% if (worker.nonRenewal) { %><span class="badge badge-red">non renewal</span><% } %>
+                    </div>
+                    <div class="text-sm text-muted"><%= worker.turniCount %> servizi | <%= worker.qualifiche.join(' | ') %></div>
+                    <div class="text-sm text-muted mt-xs"><%= worker.headline %></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-semibold"><%= worker.compliance.controlScore %></div>
+                    <div class="text-tiny text-muted">control score</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+        <div>
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Watchlist compliance</h3>
+          <% if (complianceWatchlist.length === 0) { %>
+            <div class="surface-muted">
+              <p class="text-sm text-muted">Nessun pair in watchlist. La rotazione dei professionisti e in area verde.</p>
+            </div>
+          <% } else { %>
+            <% complianceWatchlist.forEach(worker => { %>
+              <div class="card mb-md">
+                <div class="card-body">
+                  <div class="flex items-center gap-sm mb-sm">
+                    <span class="font-semibold"><%= worker.name %></span>
+                    <span class="badge <%= worker.complianceUi.badge %>"><%= worker.complianceUi.label %></span>
+                  </div>
+                  <div class="detail-list">
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Giorni 24 mesi</span>
+                      <strong><%= worker.compliance.days24m %></strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Share fatturato</span>
+                      <strong><%= Math.round(worker.compliance.share24m * 100) %>%</strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Azione suggerita</span>
+                      <strong>ruotare su altro venue</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

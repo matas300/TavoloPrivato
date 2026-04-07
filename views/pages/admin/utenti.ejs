@@ -1,0 +1,62 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <form method="GET" action="/admin/utenti" class="flex gap-md mb-xl flex-wrap">
+        <input class="form-input" name="search" placeholder="Cerca utente..." style="max-width:250px" value="<%= filters.search || '' %>">
+        <select class="form-input form-select" name="role" style="max-width:160px">
+          <option value="">Tutti i ruoli</option>
+          <option value="cameriere" <%= filters.role === 'cameriere' ? 'selected' : '' %>>Camerieri</option>
+          <option value="ristorante" <%= filters.role === 'ristorante' ? 'selected' : '' %>>Ristoranti</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Cerca</button>
+      </form>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Utente</th><th>Ruolo</th><th>Zona</th><th>Rating</th><th>Stato</th><th>Azioni</th></tr></thead>
+          <tbody>
+            <% utenti.forEach(u => { %>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-sm">
+                    <div class="avatar avatar-sm <%= u.role === 'ristorante' ? 'avatar-olive' : '' %>"><%= u.initials %></div>
+                    <div><div class="font-semibold"><%= u.name %></div><div class="text-tiny text-muted"><%= u.email %></div></div>
+                  </div>
+                </td>
+                <td><span class="badge <%= u.role === 'cameriere' ? 'badge-terracotta' : 'badge-olive' %>"><%= u.role %></span></td>
+                <td><%= u.zona || '&mdash;' %></td>
+                <td><%= u.rating || '&mdash;' %></td>
+                <td>
+                  <% if (u.status === 'suspended') { %>
+                    <span class="badge badge-red">Sospeso</span>
+                  <% } else if (u.verificato) { %>
+                    <span class="badge badge-olive">Verificato</span>
+                  <% } else { %>
+                    <span class="badge badge-neutral">Non verificato</span>
+                  <% } %>
+                </td>
+                <td>
+                  <div class="flex gap-xs flex-wrap">
+                    <% if (!u.verificato && u.role === 'cameriere' && u.status !== 'suspended') { %>
+                      <button class="btn btn-sm btn-secondary" onclick="adminAction('/api/admin/utenti/<%= u.id %>/verifica', 'Utente verificato')">Verifica</button>
+                    <% } %>
+                    <% if (u.status !== 'suspended') { %>
+                      <button class="btn btn-ghost btn-sm" onclick="adminAction('/api/admin/utenti/<%= u.id %>/warning', 'Warning inviato')" style="color:var(--yellow)">Warning</button>
+                      <button class="btn btn-ghost btn-sm" onclick="if(confirm('Sei sicuro di voler bannare <%= u.name %>?'))adminAction('/api/admin/utenti/<%= u.id %>/ban', 'Utente bannato')" style="color:var(--red)">Ban</button>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

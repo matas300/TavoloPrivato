@@ -1,0 +1,349 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="alert-box alert-warning mb-xl">
+        <i data-lucide="shield-alert" style="width:24px;height:24px;color:var(--terracotta);flex-shrink:0"></i>
+        <div>
+          <strong>Blueprint operativo e non solo teorico</strong>
+          <p class="text-sm text-muted">Questa vista raccoglie architettura dati, mesh di agenti, flusso compliance e dataset demo. La logica legale usa i guardrail Fornero come indicatori interni ma presidia anche il rischio di etero-organizzazione e il tema autorizzativo dell intermediazione.</p>
+        </div>
+      </div>
+
+      <div class="grid-4 mb-xl">
+        <div class="stat-card">
+          <div class="stat-value"><%= stats.domains %></div>
+          <div class="stat-label">Domini dati</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= stats.agents %></div>
+          <div class="stat-label">Agenti previsti</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= stats.workers %></div>
+          <div class="stat-label">Worker mock</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= stats.restaurants %></div>
+          <div class="stat-label">Ristoranti mock</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-xl">
+        <div class="card">
+          <div class="card-body">
+            <div class="flex items-center justify-between mb-md">
+              <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Product posture</h3>
+              <span class="badge badge-terracotta">MVP to scale</span>
+            </div>
+            <p class="text-sm text-muted mb-md"><%= blueprint.product.positioning %></p>
+            <div class="stack-list">
+              <% blueprint.product.operatingModes.forEach(mode => { %>
+                <span class="badge badge-neutral"><%= mode %></span>
+              <% }) %>
+            </div>
+            <div class="mt-lg">
+              <% blueprint.product.legalWarnings.forEach(item => { %>
+                <div class="mb-sm text-sm"><span class="badge badge-red">legal</span> <%= item %></div>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="flex items-center justify-between mb-md">
+              <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Raw artifacts</h3>
+              <span class="badge badge-olive">repo-backed</span>
+            </div>
+            <p class="text-sm text-muted mb-lg">Gli stessi materiali sono disponibili in formato machine-readable per il frontend demo o per una futura API console.</p>
+            <div class="flex flex-wrap gap-sm">
+              <a href="/admin/legal-billing" class="btn btn-primary btn-sm">Legal & Billing console</a>
+              <a href="/api/blueprint" class="btn btn-outline btn-sm">JSON blueprint</a>
+              <a href="/api/demo-marketplace" class="btn btn-outline btn-sm">JSON mock data</a>
+              <a href="/api/blueprint/legal-audit" class="btn btn-outline btn-sm">Audit markdown</a>
+              <a href="/api/blueprint/sql" class="btn btn-ghost btn-sm">SQL schema</a>
+              <a href="/api/blueprint/prisma" class="btn btn-ghost btn-sm">Prisma schema</a>
+              <a href="/api/blueprint/doc" class="btn btn-ghost btn-sm">Markdown doc</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-xl">
+        <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">UX and product guardrails</h3>
+        <div class="grid-2">
+          <% blueprint.uxPrinciples.forEach(item => { %>
+            <div class="card mb-md">
+              <div class="card-body">
+                <div class="flex items-center gap-sm mb-sm">
+                  <span class="badge <%= item.audience === 'ristoranti' ? 'badge-olive' : item.audience === 'worker' ? 'badge-terracotta' : 'badge-neutral' %>"><%= item.audience %></span>
+                </div>
+                <div class="font-semibold mb-xs"><%= item.title %></div>
+                <p class="text-sm text-muted"><%= item.detail %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="mb-xl">
+        <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Relational database domains</h3>
+        <div class="grid-2">
+          <% blueprint.databaseDomains.forEach(domain => { %>
+            <div class="card mb-md">
+              <div class="card-body">
+                <div class="flex items-center justify-between mb-sm">
+                  <div class="font-semibold"><%= domain.name %></div>
+                  <span class="badge badge-neutral"><%= domain.entities.length %> tabelle</span>
+                </div>
+                <p class="text-sm text-muted mb-md"><%= domain.purpose %></p>
+                <div class="stack-list">
+                  <% domain.entities.forEach(entity => { %>
+                    <span class="badge badge-terracotta"><%= entity %></span>
+                  <% }) %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="mb-xl">
+        <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Agent mesh</h3>
+        <div class="grid-2">
+          <% blueprint.agentMesh.forEach(agent => { %>
+            <div class="card mb-md">
+              <div class="card-body">
+                <div class="flex items-center justify-between mb-sm">
+                  <div class="font-semibold"><%= agent.name %></div>
+                  <span class="badge badge-olive"><%= agent.emits.length %> eventi</span>
+                </div>
+                <div class="text-sm text-muted mb-sm">Owned data:</div>
+                <div class="stack-list mb-md">
+                  <% agent.owns.forEach(entity => { %>
+                    <span class="badge badge-neutral"><%= entity %></span>
+                  <% }) %>
+                </div>
+                <div class="text-sm text-muted mb-sm">Compiti:</div>
+                <% agent.responsibilities.forEach(task => { %>
+                  <p class="text-sm mb-xs"><%= task %></p>
+                <% }) %>
+                <div class="text-sm text-muted mt-md mb-sm">Eventi emessi:</div>
+                <div class="stack-list">
+                  <% agent.emits.forEach(eventName => { %>
+                    <span class="badge badge-terracotta"><%= eventName %></span>
+                  <% }) %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-xl">
+        <div>
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Compliance flow</h3>
+          <div class="card">
+            <div class="card-body">
+              <% blueprint.complianceEngine.evaluationFlow.forEach(item => { %>
+                <div class="timeline-item">
+                  <div class="timeline-dot active"><%= item.step %></div>
+                  <div>
+                    <div class="font-semibold"><%= item.title %></div>
+                    <p class="text-sm text-muted"><%= item.detail %></p>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Decision ladder and thresholds</h3>
+          <div class="card">
+            <div class="card-body">
+              <div class="stack-list mb-md">
+                <% blueprint.complianceEngine.decisionStates.forEach(state => { %>
+                  <span class="badge <%= state === 'hard_stop' ? 'badge-red' : state === 'allow' ? 'badge-olive' : 'badge-yellow' %>"><%= state %></span>
+                <% }) %>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Regola</th>
+                      <th>Warn</th>
+                      <th>Soft stop</th>
+                      <th>Hard stop</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% blueprint.complianceEngine.thresholds.forEach(rule => { %>
+                      <tr>
+                        <td>
+                          <div class="font-semibold"><%= rule.label %></div>
+                          <div class="text-tiny text-muted"><%= rule.legalStatus %></div>
+                        </td>
+                        <td><%= rule.warnAt %></td>
+                        <td><%= rule.softStopAt %></td>
+                        <td><%= rule.hardStopAt %></td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+              <div class="alert-box alert-info mt-lg">
+                <i data-lucide="info" style="width:20px;height:20px;color:var(--olive);flex-shrink:0"></i>
+                <p class="text-sm text-muted"><%= blueprint.complianceEngine.safeHarborNote %></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-xl">
+        <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Anti-abuse signals</h3>
+        <div class="grid-2">
+          <% blueprint.complianceEngine.antiAbuseSignals.forEach(signal => { %>
+            <div class="card mb-md">
+              <div class="card-body">
+                <div class="flex items-center gap-sm">
+                  <span class="badge badge-red">signal</span>
+                  <p class="text-sm"><%= signal %></p>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="mb-xl">
+        <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">API surface blueprint</h3>
+        <div class="grid-2">
+          <% blueprint.apiMap.forEach(section => { %>
+            <div class="card mb-md">
+              <div class="card-body">
+                <div class="font-semibold mb-sm"><%= section.area %></div>
+                <% section.routes.forEach(route => { %>
+                  <div class="text-sm mb-xs"><span class="inline-code"><%= route %></span></div>
+                <% }) %>
+                <p class="text-sm text-muted mt-sm"><%= section.note %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="mb-xl">
+        <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Mock marketplace data</h3>
+        <div class="grid-2">
+          <div>
+            <% marketplaceDemo.workers.forEach(worker => { %>
+              <div class="card mb-md">
+                <div class="card-body">
+                  <div class="flex items-center justify-between mb-sm">
+                    <div>
+                      <div class="font-semibold"><%= worker.name %></div>
+                      <div class="text-sm text-muted"><%= worker.displayRole %> | <%= worker.city %></div>
+                    </div>
+                    <span class="badge <%= worker.taxMode === 'forfettario' ? 'badge-olive' : 'badge-yellow' %>"><%= worker.taxMode %></span>
+                  </div>
+                  <p class="text-sm text-muted mb-sm"><%= worker.bio %></p>
+                  <div class="stack-list mb-sm">
+                    <% worker.hardSkills.forEach(skill => { %>
+                      <span class="badge badge-terracotta"><%= skill %></span>
+                    <% }) %>
+                  </div>
+                  <div class="text-sm">Fee minima: <strong>EUR <%= worker.minimumFeeEur %></strong> | Rating <strong><%= worker.rating %></strong> | Giorni 24m <strong><%= worker.daysWorkedPlatform24m %></strong></div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+          <div>
+            <% marketplaceDemo.restaurants.forEach(restaurant => { %>
+              <div class="card mb-md">
+                <div class="card-body">
+                  <div class="flex items-center justify-between mb-sm">
+                    <div>
+                      <div class="font-semibold"><%= restaurant.brandName %></div>
+                      <div class="text-sm text-muted"><%= restaurant.style %> | <%= restaurant.city %></div>
+                    </div>
+                    <span class="badge badge-olive">ticket EUR <%= restaurant.avgTicketEur %></span>
+                  </div>
+                  <div class="stack-list mb-sm">
+                    <% restaurant.vibe.forEach(tag => { %>
+                      <span class="badge badge-neutral"><%= tag %></span>
+                    <% }) %>
+                  </div>
+                  <% restaurant.servicePackages.forEach(pkg => { %>
+                    <div class="text-sm mb-xs"><span class="inline-code"><%= pkg.name %></span> | <%= pkg.resultLabel %> | EUR <%= pkg.flatFeeEur %></div>
+                  <% }) %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-xl">
+        <div>
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Pair metrics</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pair</th>
+                  <th>Days 24m</th>
+                  <th>Share</th>
+                  <th>Decision</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% marketplaceDemo.pairMetrics.forEach(metric => { %>
+                  <tr>
+                    <td>
+                      <div class="font-semibold"><%= metric.workerId %> x <%= metric.restaurantId %></div>
+                      <div class="text-tiny text-muted"><%= metric.notes %></div>
+                    </td>
+                    <td><%= metric.days24m %></td>
+                    <td><%= Math.round(metric.workerRevenueShare24m * 100) %>%</td>
+                    <td><span class="badge <%= metric.decision === 'allow' ? 'badge-olive' : 'badge-yellow' %>"><%= metric.decision %></span></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Compliance alerts</h3>
+          <% marketplaceDemo.complianceAlerts.forEach(alert => { %>
+            <div class="card mb-md" style="border-left:3px solid <%= alert.severity === 'high' ? 'var(--red)' : 'var(--yellow)' %>">
+              <div class="card-body">
+                <div class="flex items-center gap-sm mb-xs">
+                  <span class="badge <%= alert.severity === 'high' ? 'badge-red' : 'badge-yellow' %>"><%= alert.severity %></span>
+                  <span class="text-tiny text-muted"><%= alert.type %></span>
+                </div>
+                <p class="text-sm"><%= alert.message %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Blueprint markdown preview</h3>
+          <div class="code-panel"><%= docPreview %></div>
+        </div>
+        <div>
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">SQL schema preview</h3>
+          <div class="code-panel"><%= sqlPreview %></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

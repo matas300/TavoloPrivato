@@ -1,0 +1,136 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="hero-panel mb-xl">
+        <span class="eyebrow mb-md">Talent search</span>
+        <h1 class="font-display font-bold mb-sm" style="font-size:var(--fs-h1)">Seleziona professionisti compatibili con i tuoi pacchetti</h1>
+        <p class="page-lead">Il ranking combina skill, disponibilita, day rate e guardrail di compliance. Se un pair e troppo concentrato, il profilo resta visibile ma viene de-prioritizzato o fermato.</p>
+      </div>
+
+      <div class="card card-flat mb-xl">
+        <div class="card-body" style="background:var(--bg-secondary);border-radius:var(--radius-lg)">
+          <form method="GET" action="/ristorante/cerca" class="form-row">
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Zona</label>
+              <select class="form-input form-select" name="zona">
+                <option value="">Tutte</option>
+                <option value="Milano" <%= filters.zona === 'Milano' ? 'selected' : '' %>>Milano</option>
+                <option value="Roma" <%= filters.zona === 'Roma' ? 'selected' : '' %>>Roma</option>
+                <option value="Firenze" <%= filters.zona === 'Firenze' ? 'selected' : '' %>>Firenze</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Skill principale</label>
+              <select class="form-input form-select" name="qualifica">
+                <option value="">Tutte</option>
+                <% qualificaOptions.forEach(q => { %>
+                  <option value="<%= q %>" <%= filters.qualifica === q ? 'selected' : '' %>><%= q %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Esperienza minima</label>
+              <input class="form-input" type="number" name="esperienza" placeholder="0" value="<%= filters.esperienza || '' %>">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Budget max</label>
+              <input class="form-input" type="number" name="budget" placeholder="200" value="<%= filters.budget || '' %>">
+            </div>
+            <div class="form-group" style="margin:0;display:flex;align-items:flex-end">
+              <button type="submit" class="btn btn-primary">Aggiorna ranking</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="surface-muted mb-xl">
+        <div class="flex justify-between items-start gap-lg flex-wrap">
+          <div>
+            <div class="text-tiny text-muted mb-sm">Posizionamento locale</div>
+            <div class="font-semibold"><%= profile.name %> | <%= profile.tipoCucina %></div>
+            <p class="text-sm text-muted mt-sm"><%= profile.legalPositioning %></p>
+          </div>
+          <div class="metric-strip">
+            <div class="metric-pill">
+              <span>Pacchetti</span>
+              <strong><%= profile.servicePackages.length %></strong>
+            </div>
+            <div class="metric-pill">
+              <span>Capienza</span>
+              <strong><%= profile.capienza %> coperti</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <% if (camerieri.length === 0) { %>
+        <div class="surface-muted text-center">
+          <i data-lucide="search-x" style="width:48px;height:48px;margin-bottom:var(--space-md);opacity:0.5"></i>
+          <p>Nessun profilo trovato con questi filtri.</p>
+        </div>
+      <% } else { %>
+        <% camerieri.forEach(cam => { %>
+          <div class="card card-hover mb-md">
+            <div class="card-body">
+              <div class="flex justify-between items-start gap-lg flex-wrap">
+                <div style="max-width:760px">
+                  <div class="flex items-center gap-sm flex-wrap mb-sm">
+                    <span class="score-pill">Fit <%= cam.matchScore %>/100</span>
+                    <span class="badge <%= cam.complianceUi.badge %>"><%= cam.complianceUi.label %></span>
+                    <% if (cam.verificato) { %><span class="badge badge-olive">verificato</span><% } %>
+                    <% if (cam.safeHarborCandidate) { %><span class="badge badge-neutral">seniority alta</span><% } %>
+                  </div>
+                  <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)"><%= cam.name %></h3>
+                  <div class="text-sm text-muted"><%= cam.headline %></div>
+                  <div class="metric-strip mt-md">
+                    <% cam.qualifiche.forEach(q => { %>
+                      <span class="badge badge-terracotta"><%= q %></span>
+                    <% }) %>
+                    <% cam.hardSkills.slice(0, 3).forEach(skill => { %>
+                      <span class="badge badge-neutral"><%= skill %></span>
+                    <% }) %>
+                  </div>
+                </div>
+
+                <div class="surface-muted" style="min-width:300px">
+                  <div class="detail-list">
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Day rate</span>
+                      <strong><%= cam.dayRateLabel %></strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Esperienza</span>
+                      <strong><%= cam.esperienza %> anni</strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Zone</span>
+                      <strong><%= cam.preferredZones.join(' | ') %></strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Pair share</span>
+                      <strong><%= Math.round(cam.compliance.share24m * 100) %>%</strong>
+                    </div>
+                    <div class="detail-row">
+                      <span class="text-sm text-muted">Pacchetto migliore</span>
+                      <strong><%= cam.bestPackage ? cam.bestPackage.name : 'servizio custom' %></strong>
+                    </div>
+                  </div>
+                  <div class="flex gap-sm mt-md">
+                    <button class="btn btn-outline btn-sm" onclick="showToast('Chat di colloquio aperta in demo')">Colloquio</button>
+                    <button class="btn btn-primary btn-sm" onclick="showToast('Proposta prestazione inviata')">Invia proposta</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

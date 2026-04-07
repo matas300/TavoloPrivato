@@ -1,0 +1,68 @@
+<%
+const role = currentUser.role;
+let links = [];
+if (role === 'cameriere') {
+  links = [
+    { icon: 'layout-dashboard', label: 'Dashboard', href: '/cameriere/dashboard' },
+    { icon: 'search', label: 'Cerca Annunci', href: '/cameriere/cerca' },
+    { icon: 'user', label: 'Il Mio Profilo', href: '/cameriere/profilo' },
+    { icon: 'calendar-range', label: 'Contratti Lunghi', href: '/cameriere/contratti-lunghi' },
+    { icon: 'file-text', label: 'Contratti', href: '/cameriere/contratti' },
+    { icon: 'wallet', label: 'Wallet & Pagamenti', href: '/cameriere/wallet' },
+    { icon: 'message-circle', label: 'Messaggi', href: '/cameriere/messaggi' },
+    { icon: 'book-open', label: 'Guida P.IVA', href: '/cameriere/guida-piva' }
+  ];
+} else if (role === 'ristorante') {
+  links = [
+    { icon: 'layout-dashboard', label: 'Dashboard', href: '/ristorante/dashboard' },
+    { icon: 'search', label: 'Cerca Camerieri', href: '/ristorante/cerca' },
+    { icon: 'store', label: 'Il Mio Ristorante', href: '/ristorante/profilo' },
+    { icon: 'megaphone', label: 'Annunci Attivi', href: '/ristorante/annunci' },
+    { icon: 'calendar-range', label: 'Contratti Lunghi', href: '/ristorante/contratti-lunghi' },
+    { icon: 'file-text', label: 'Contratti & Storico', href: '/ristorante/contratti' },
+    { icon: 'credit-card', label: 'Pagamenti', href: '/ristorante/pagamenti' },
+    { icon: 'message-circle', label: 'Messaggi', href: '/ristorante/messaggi' }
+  ];
+} else if (role === 'admin') {
+  links = [
+    { icon: 'layout-dashboard', label: 'Overview', href: '/admin/dashboard' },
+    { icon: 'network', label: 'Architecture & Compliance', href: '/admin/blueprint' },
+    { icon: 'shield-check', label: 'Legal & Billing', href: '/admin/legal-billing' },
+    { icon: 'users', label: 'Gestione Utenti', href: '/admin/utenti' },
+    { icon: 'alert-triangle', label: 'Alert', href: '/admin/alert' },
+    { icon: 'receipt', label: 'Transazioni', href: '/admin/transazioni' },
+    { icon: 'settings', label: 'Commissioni', href: '/admin/commissioni' },
+    { icon: 'clipboard-list', label: 'Audit Log', href: '/admin/audit' }
+  ];
+}
+%>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a class="logo logo-sm" href="/<%= role === 'admin' ? 'admin' : role %>/dashboard">
+      <%- include('logo-svg') %>
+      <span class="logo-text" style="font-size:1.15rem">Tavolo<span>Libero</span></span>
+    </a>
+  </div>
+  <nav class="sidebar-nav">
+    <% links.forEach(l => { %>
+      <a class="sidebar-link <%= path === l.href ? 'active' : '' %>" href="<%= l.href %>">
+        <i data-lucide="<%= l.icon %>"></i> <%= l.label %>
+        <% if (l.label === 'Messaggi' && typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+          <span class="badge-count" style="margin-left:auto"><%= unreadCount %></span>
+        <% } %>
+      </a>
+    <% }) %>
+  </nav>
+  <div class="sidebar-footer">
+    <a class="sidebar-link" href="/logout" style="color:var(--red)">
+      <i data-lucide="log-out"></i> Esci
+    </a>
+    <button class="sidebar-link" onclick="toggleTheme()" style="border:none;background:none;cursor:pointer;width:100%">
+      <i data-lucide="moon" class="theme-icon-light"></i>
+      <i data-lucide="sun" class="theme-icon-dark" style="display:none"></i>
+      <span class="theme-label-light">Tema scuro</span>
+      <span class="theme-label-dark" style="display:none">Tema chiaro</span>
+    </button>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>

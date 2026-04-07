@@ -1,0 +1,44 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="tabs">
+        <a class="tab <%= filtroStato === 'all' ? 'active' : '' %>" href="/ristorante/contratti">Tutti</a>
+        <a class="tab <%= filtroStato === 'confermato' ? 'active' : '' %>" href="/ristorante/contratti?stato=confermato">Confermati</a>
+        <a class="tab <%= filtroStato === 'completato' ? 'active' : '' %>" href="/ristorante/contratti?stato=completato">Completati</a>
+        <a class="tab <%= filtroStato === 'pagato' ? 'active' : '' %>" href="/ristorante/contratti?stato=pagato">Pagati</a>
+        <a class="tab" href="/ristorante/contratti-lunghi">Contratti lunghi</a>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Data</th><th>Cameriere</th><th>Tipo</th><th>Costo totale</th><th>Stato</th><th>Val.</th></tr></thead>
+          <tbody>
+            <% contratti.forEach(c => { const cam = getUser(c.cameriereId); %>
+              <tr>
+                <td><%= c.data %></td>
+                <td><div class="flex items-center gap-sm"><div class="avatar avatar-sm"><%= cam.initials %></div> <%= cam.name %></div></td>
+                <td><span class="badge badge-neutral"><%= c.tipo %></span></td>
+                <td class="font-semibold">&euro;<%= c.compensoCam + c.commissione %></td>
+                <td>
+                  <% if (['pagato','completato'].includes(c.stato)) { %><span class="badge badge-olive"><%= c.stato === 'pagato' ? 'Pagato' : 'Completato' %></span>
+                  <% } else if (c.stato === 'confermato') { %><span class="badge badge-terracotta">Confermato</span>
+                  <% } else { %><span class="badge badge-neutral"><%= c.stato %></span><% } %>
+                </td>
+                <td>
+                  <% if (c.valCam !== null) { %><div class="stars"><%- include('../../partials/stars', { rating: c.valCam }) %></div>
+                  <% } else { %><span class="text-tiny text-muted">&mdash;</span><% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

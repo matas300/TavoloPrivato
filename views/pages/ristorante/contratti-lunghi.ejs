@@ -1,0 +1,228 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="hero-panel mb-xl">
+        <div class="flex justify-between items-start gap-lg flex-wrap">
+          <div style="max-width:780px">
+            <span class="eyebrow mb-sm">Contratti lunghi 3-8 mesi</span>
+            <h1 class="font-display font-semibold" style="font-size:var(--fs-h1);line-height:1.05">Crea un ingaggio mensile con milestone, termini di pagamento e PDF pronto da firmare.</h1>
+            <p class="page-lead mt-md">Questa vista e dedicata ai rapporti prolungati. Il flusso forza controllo compliance, descrive il servizio per obiettivi e genera un contratto ex art. 2222 C.c. con billing mensile a 0, 15, 30 o 45 giorni.</p>
+          </div>
+          <div class="metric-strip">
+            <div class="metric-pill">
+              <span>Worker selezionabili</span>
+              <strong><%= workerOptions.length %></strong>
+            </div>
+            <div class="metric-pill">
+              <span>Contratti lunghi creati</span>
+              <strong><%= longContracts.length %></strong>
+            </div>
+            <div class="metric-pill">
+              <span>Pagamento supportato</span>
+              <strong>0 / 15 / 30 / 45</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="long-contract-shell mb-xl">
+        <section class="card long-contract-panel">
+          <div class="card-body">
+            <div class="flex justify-between items-start gap-md flex-wrap mb-lg">
+              <div>
+                <span class="eyebrow mb-sm">Nuovo contratto</span>
+                <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Imposta un ingaggio esteso</h3>
+                <p class="text-sm text-muted mt-sm">Il ristorante vende un risultato continuativo di servizio, non un orario fisso. La compliance viene verificata prima della generazione.</p>
+              </div>
+              <a href="/ristorante/cerca" class="btn btn-ghost btn-sm">Apri ricerca worker</a>
+            </div>
+
+            <form id="long-contract-form" class="sim-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Professionista</label>
+                  <select class="form-input form-select" name="workerProfileId" required>
+                    <option value="">Seleziona un profilo</option>
+                    <% workerOptions.forEach(worker => { %>
+                      <option value="<%= worker.id %>"><%= worker.name %> · min EUR <%= worker.minFee %>/giorno<%= worker.safeHarborCandidate ? ' · senior exempt' : '' %></option>
+                    <% }) %>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Tipo servizio</label>
+                  <input class="form-input" type="text" name="serviceType" value="gestione_sala_stagionale" placeholder="gestione_sala_stagionale" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Data inizio</label>
+                  <input class="form-input" type="date" name="startDate" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Data fine</label>
+                  <input class="form-input" type="date" name="endDate" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Giorni stimati di servizio</label>
+                  <input class="form-input" type="number" name="estimatedServiceDays" min="1" placeholder="36" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Corrispettivo mensile lordo</label>
+                  <input class="form-input" type="number" step="0.01" name="monthlyGrossAmountEur" placeholder="2000" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Termini di pagamento</label>
+                  <select class="form-input form-select" name="paymentTermsDays">
+                    <option value="d0">0 giorni</option>
+                    <option value="d15">15 giorni</option>
+                    <option value="d30" selected>30 giorni</option>
+                    <option value="d45">45 giorni</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Base scadenza</label>
+                  <select class="form-input form-select" name="paymentTermsBase">
+                    <option value="end_of_month" selected>Data fine mese</option>
+                    <option value="invoice_date">Data fattura</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Oggetto della prestazione</label>
+                <textarea class="form-input" rows="3" name="objectiveSummary" placeholder="Es. Gestione sala per stagione estiva con coordinamento ranghi, accoglienza ospiti e continuita del servizio premium." required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Scope of work per obiettivi</label>
+                <textarea class="form-input" rows="4" name="scopeOfWork" placeholder="Una riga per obiettivo&#10;Presidio servizio cena e gestione flusso ospiti&#10;Coordinamento operativo dei ranghi&#10;Chiusura operativa della sala e riallineamento standard"></textarea>
+                <p class="text-tiny text-muted mt-sm">Una riga per punto. Evita riferimenti a assunzione, dipendente, stipendio o orario fisso.</p>
+              </div>
+
+              <div class="sim-action-buttons">
+                <button type="button" class="btn btn-ghost" id="long-contract-check">Controlla compliance</button>
+                <button type="submit" class="btn btn-primary">Genera contratto lungo</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <aside class="long-contract-side">
+          <div class="card mb-lg">
+            <div class="card-body">
+              <span class="eyebrow mb-sm">Compliance</span>
+              <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Esito prima del contratto</h3>
+              <div id="long-contract-compliance" class="long-contract-state">
+                <p class="text-sm text-muted">Compila il form e lancia il controllo. Qui vedrai blocchi 240 giorni, 80% concentrazione, ex-datore e safe harbor.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <span class="eyebrow mb-sm">Output</span>
+              <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">PDF e milestone</h3>
+              <div id="long-contract-result" class="long-contract-state">
+                <p class="text-sm text-muted">Dopo la generazione vedrai qui il PDF pronto da firmare e il piano economico mensile.</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="flex justify-between items-start gap-lg flex-wrap mb-lg">
+            <div>
+              <span class="eyebrow mb-sm">Storico</span>
+              <h3 class="font-display font-semibold" style="font-size:var(--fs-h3)">Contratti lunghi gia generati</h3>
+            </div>
+            <p class="text-sm text-muted">Ogni card mostra PDF, termini e milestone gia previste per il billing.</p>
+          </div>
+
+          <% if (!longContracts.length) { %>
+            <div class="surface-muted">
+              <p class="text-sm text-muted">Non hai ancora contratti lunghi in archivio. Il primo contratto che generi da questa pagina comparira qui.</p>
+            </div>
+          <% } %>
+
+          <div class="long-contract-list">
+            <% longContracts.forEach(contract => { %>
+              <article class="long-contract-card">
+                <div class="flex justify-between items-start gap-md flex-wrap">
+                  <div style="max-width:720px">
+                    <div class="flex items-center gap-sm flex-wrap mb-sm">
+                      <span class="badge badge-neutral">contratto #<%= contract.id %></span>
+                      <span class="badge badge-terracotta"><%= contract.paymentTermsLabel %></span>
+                      <span class="badge <%= contract.status === 'completed' ? 'badge-olive' : 'badge-neutral' %>"><%= contract.status %></span>
+                    </div>
+                    <h4 class="font-display font-semibold" style="font-size:1.35rem"><%= contract.workerName %></h4>
+                    <p class="text-sm text-muted mt-sm"><%= contract.objectiveSummary %></p>
+                  </div>
+                  <div class="surface-muted" style="min-width:280px">
+                    <div class="detail-list">
+                      <div class="detail-row"><span class="text-sm text-muted">Periodo</span><strong><%= new Date(contract.serviceStartDate).toLocaleDateString('it-IT') %> - <%= new Date(contract.serviceEndDate).toLocaleDateString('it-IT') %></strong></div>
+                      <div class="detail-row"><span class="text-sm text-muted">Corrispettivo totale</span><strong>EUR <%= contract.grossAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+                      <div class="detail-row"><span class="text-sm text-muted">Netto professionista</span><strong style="color:var(--olive)">EUR <%= contract.workerNetEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+                    </div>
+                    <% if (contract.pdfUrl) { %>
+                      <a class="btn btn-outline btn-sm mt-md" href="<%= contract.pdfUrl %>" target="_blank" rel="noreferrer">Apri PDF contratto</a>
+                    <% } %>
+                  </div>
+                </div>
+
+                <div class="table-wrap mt-md">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Milestone</th>
+                        <th>Fattura</th>
+                        <th>Scadenza</th>
+                        <th>Lordo</th>
+                        <th>Netto</th>
+                        <th>Stato</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% contract.milestones.forEach(milestone => { %>
+                        <tr>
+                          <td><%= milestone.milestoneLabel %></td>
+                          <td><%= new Date(milestone.invoiceDate).toLocaleDateString('it-IT') %></td>
+                          <td><%= new Date(milestone.dueDate).toLocaleDateString('it-IT') %></td>
+                          <td>EUR <%= milestone.grossAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                          <td>EUR <%= milestone.workerNetEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                          <td>
+                            <span class="badge <%= milestone.status === 'paid' ? 'badge-olive' : milestone.status === 'processing' ? 'badge-terracotta' : 'badge-neutral' %>">
+                              <%= milestone.invoiceStatus || milestone.status %>
+                            </span>
+                          </td>
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  window.TL_LONG_CONTRACT_PAGE = {
+    workerOptions: <%- JSON.stringify(workerOptions) %>
+  };
+</script>
+<script src="/js/long-contract-page.js"></script>
+<%- include('../../partials/foot') %>

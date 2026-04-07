@@ -1,0 +1,95 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <div class="grid-3 mb-xl">
+        <div class="stat-card">
+          <div class="stat-value"><%= overview.totalAlerts %></div>
+          <div class="stat-label">Alert totali</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= overview.openHigh %></div>
+          <div class="stat-label">Alta severita</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= overview.openMedium %></div>
+          <div class="stat-label">Media severita</div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="card-body">
+          <h3 class="font-display font-semibold mb-md" style="font-size:var(--fs-h3)">Guardrail attivi</h3>
+          <div class="grid-2">
+            <% thresholds.forEach(rule => { %>
+              <div class="surface-muted">
+                <div class="font-semibold mb-xs"><%= rule.label %></div>
+                <p class="text-sm text-muted mb-sm"><%= rule.legalStatus %></p>
+                <div class="detail-list">
+                  <div class="detail-row">
+                    <span class="text-sm text-muted">warn</span>
+                    <strong><%= rule.warnAt %></strong>
+                  </div>
+                  <div class="detail-row">
+                    <span class="text-sm text-muted">soft stop</span>
+                    <strong><%= rule.softStopAt %></strong>
+                  </div>
+                  <div class="detail-row">
+                    <span class="text-sm text-muted">hard stop</span>
+                    <strong><%= rule.hardStopAt %></strong>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <% alerts.forEach(alert => { %>
+        <div class="card mb-md" style="border-left:3px solid <%= alert.severity === 'alta' ? 'var(--red)' : 'var(--yellow)' %>">
+          <div class="card-body">
+            <div class="flex justify-between items-start gap-lg flex-wrap">
+              <div style="max-width:760px">
+                <div class="flex items-center gap-sm mb-sm flex-wrap">
+                  <span class="badge <%= alert.severity === 'alta' ? 'badge-red' : 'badge-yellow' %>"><%= alert.severity %></span>
+                  <span class="badge badge-neutral"><%= alert.tipo %></span>
+                  <span class="text-tiny text-muted"><%= alert.data %></span>
+                  <% if (alert.stato === 'monitorato') { %><span class="badge badge-olive">monitorato</span><% } %>
+                </div>
+                <div class="font-semibold mb-xs"><%= alert.title %></div>
+                <p class="text-sm text-muted mb-sm"><%= alert.desc %></p>
+                <p class="text-sm"><strong>Raccomandazione:</strong> <%= alert.recommendation %></p>
+              </div>
+              <div class="flex gap-sm shrink-0">
+                <button class="btn btn-ghost btn-sm" onclick="showToast('Case aperto in demo')">Apri case</button>
+                <button class="btn btn-ghost btn-sm" onclick="showToast('Alert archiviato in demo')">Archivia</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+
+      <h3 class="font-display font-semibold mb-md mt-xl" style="font-size:var(--fs-h3)">Non renewal list</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ristorante</th><th>Worker</th><th>Motivo</th><th>Data</th></tr></thead>
+          <tbody>
+            <% nonRenewal.forEach(item => { const restaurant = getUser(item.ristoranteId); const worker = getUser(item.cameriereId); %>
+              <tr>
+                <td><%= restaurant.name %></td>
+                <td><%= worker.name %></td>
+                <td class="text-sm"><%= item.motivo %></td>
+                <td><%= item.data %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>
