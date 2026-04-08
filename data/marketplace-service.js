@@ -161,9 +161,15 @@ const pairOverrides = {
   '6:13': { days24m: 19, share24m: 0.31, controlScore: 26, decision: 'allow', notes: ['Pair compatibile e orientato ad eventi.'] }
 };
 
+const textFixupsMap = Object.fromEntries(textFixups);
+const textFixupsRegex = new RegExp(
+  Object.keys(textFixupsMap).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
+  'g'
+);
+
 function cleanText(value) {
   if (typeof value !== 'string') return value;
-  return textFixups.reduce((output, [from, to]) => output.split(from).join(to), value);
+  return value.replace(textFixupsRegex, match => textFixupsMap[match]);
 }
 
 function cleanList(values = []) {
