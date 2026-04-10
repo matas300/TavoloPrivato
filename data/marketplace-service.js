@@ -334,11 +334,28 @@ function scoreWorkerToRestaurant(worker, restaurant) {
 
 function getOpenServiceRequestsForWorker(workerId, filters = {}) {
   const worker = getEnhancedWorker(workerId);
+
+  // Cache expensive lookups that may repeat across multiple requests from the same restaurant
+  const restaurantCache = {};
+  const complianceCache = {};
+
   let items = db.annunci.filter(a => a.stato === 'aperto').map(annuncio => {
     const normalizedAnnuncio = normalizeAnnuncio(annuncio);
-    const restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
+
+    let restaurant = restaurantCache[annuncio.ristoranteId];
+    if (!restaurant) {
+      restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
+      restaurantCache[annuncio.ristoranteId] = restaurant;
+    }
+
     const pkg = packageForRestaurantAndRequest(annuncio.ristoranteId, normalizedAnnuncio);
-    const compliance = buildPairMetrics(workerId, annuncio.ristoranteId);
+
+    let compliance = complianceCache[annuncio.ristoranteId];
+    if (!compliance) {
+      compliance = buildPairMetrics(workerId, annuncio.ristoranteId);
+      complianceCache[annuncio.ristoranteId] = compliance;
+    }
+
     const score = scoreWorkerToRequest(worker, normalizedAnnuncio, pkg);
     const commission = computeCommission(normalizedAnnuncio.tipo);
     return {
