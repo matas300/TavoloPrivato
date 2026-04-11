@@ -344,13 +344,28 @@ function getMessaggiForUser(userId) {
 
 function getConversationPartners(userId) {
   const msgs = getMessaggiForUser(userId);
-  const partnerIds = [...new Set(msgs.map(m => (m.from === userId ? m.to : m.from)))];
-  return partnerIds.map(pid => {
+  const partnerMap = new Map();
+
+  for (const m of msgs) {
+    const pid = m.from === userId ? m.to : m.from;
+    if (!partnerMap.has(pid)) {
+      partnerMap.set(pid, { lastMsg: null, unread: 0 });
+    }
+    const pd = partnerMap.get(pid);
+    pd.lastMsg = m;
+    if (m.to === userId && !m.read) {
+      pd.unread++;
+    }
+  }
+
+  const partners = [];
+  for (const [pid, pd] of partnerMap.entries()) {
     const partner = getUser(pid);
-    const lastMsg = msgs.filter(m => m.from === pid || m.to === pid).pop();
-    const unread = msgs.filter(m => m.from === pid && m.to === userId && !m.read).length;
-    return { ...partner, lastMessage: lastMsg, unreadCount: unread };
-  });
+    if (partner) {
+      partners.push({ ...partner, lastMessage: pd.lastMsg, unreadCount: pd.unread });
+    }
+  }
+  return partners;
 }
 
 function getConversation(userId, partnerId) {
