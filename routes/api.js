@@ -120,27 +120,23 @@ router.get('/compliance/pairs/:workerId/:restaurantId', async (req, res) => {
 });
 
 router.get('/blueprint/doc', (req, res) => {
-  res.type('text/markdown').send(
-    fs.readFileSync(path.join(__dirname, '..', 'docs', 'marketplace-blueprint.md'), 'utf8')
-  );
+  // ⚡ Bolt: Replace synchronous readFileSync with async sendFile to prevent event loop blocking
+  res.type('text/markdown').sendFile(path.join(__dirname, '..', 'docs', 'marketplace-blueprint.md'));
 });
 
 router.get('/blueprint/legal-audit', (req, res) => {
-  res.type('text/markdown').send(
-    fs.readFileSync(path.join(__dirname, '..', 'docs', 'legal-architecture-audit.md'), 'utf8')
-  );
+  // ⚡ Bolt: Replace synchronous readFileSync with async sendFile to prevent event loop blocking
+  res.type('text/markdown').sendFile(path.join(__dirname, '..', 'docs', 'legal-architecture-audit.md'));
 });
 
 router.get('/blueprint/sql', (req, res) => {
-  res.type('text/plain').send(
-    fs.readFileSync(path.join(__dirname, '..', 'docs', 'marketplace-schema.sql'), 'utf8')
-  );
+  // ⚡ Bolt: Replace synchronous readFileSync with async sendFile to prevent event loop blocking
+  res.type('text/plain').sendFile(path.join(__dirname, '..', 'docs', 'marketplace-schema.sql'));
 });
 
 router.get('/blueprint/prisma', (req, res) => {
-  res.type('text/plain').send(
-    fs.readFileSync(path.join(__dirname, '..', 'prisma', 'schema.prisma'), 'utf8')
-  );
+  // ⚡ Bolt: Replace synchronous readFileSync with async sendFile to prevent event loop blocking
+  res.type('text/plain').sendFile(path.join(__dirname, '..', 'prisma', 'schema.prisma'));
 });
 
 router.get('/storage-mode', (req, res) => {
