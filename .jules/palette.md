@@ -1,0 +1,3 @@
+## 2025-02-28 - Localized ARIA Labels for Icon-Only Navigation Elements
+**Learning:** Icon-only interactive elements in global navigation components (like topbars) must have ARIA labels. Since the app's interface is primarily in Italian, it is critical to ensure these labels are localized (e.g., using 'Menu' and 'Notifiche' instead of 'Menu' and 'Notifications') to ensure consistency and proper screen reader experience for Italian users.
+**Action:** Always verify that aria-label attributes match the application's primary language. When creating new icon-only buttons or links, ensure the label text is accurately translated.
