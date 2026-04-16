@@ -1,0 +1,3 @@
+## 2024-05-24 - Missing ARIA Labels on Icon-Only Buttons
+**Learning:** This application extensively uses Lucide icons within `<a>` and `<button>` tags without providing text alternatives. This renders core navigation (like sidebar toggles, notification bells, and theme switchers) and actions (like sending chat messages) completely invisible to screen reader users, breaking basic WCAG compliance.
+**Action:** When adding new icon-only buttons or links, always include an `aria-label` attribute translated in Italian (e.g., `aria-label="Apri menu di navigazione"`, `aria-label="Invia messaggio"`). Audit existing UI components periodically for missing accessible names.
