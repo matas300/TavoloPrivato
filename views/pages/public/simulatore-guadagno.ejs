@@ -297,10 +297,10 @@
 </section>
 
 <script>
-  window.TL_SIMULATOR_META = <%- JSON.stringify(simulatorMeta) %>;
-  window.TL_SIMULATOR_INITIAL = <%- JSON.stringify(simulatorInitial) %>;
-  window.TL_SIMULATOR_PAGE = <%- JSON.stringify(simulatorPage) %>;
-  window.TL_SIMULATOR_SAVED = <%- JSON.stringify(savedScenarios) %>;
+  window.TL_SIMULATOR_META = <%- JSON.stringify(simulatorMeta).replace(/</g, '\\u003c') %>;
+  window.TL_SIMULATOR_INITIAL = <%- JSON.stringify(simulatorInitial).replace(/</g, '\\u003c') %>;
+  window.TL_SIMULATOR_PAGE = <%- JSON.stringify(simulatorPage).replace(/</g, '\\u003c') %>;
+  window.TL_SIMULATOR_SAVED = <%- JSON.stringify(savedScenarios).replace(/</g, '\\u003c') %>;
 </script>
 <script src="/js/earnings-simulator-page.js"></script>
 
