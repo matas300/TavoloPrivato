@@ -3,3 +3,4 @@
 - [Preferenze di lavoro utente](user_preferences.md) — KISS, contesto ≤65%, lingua IT, decisioni autonome quando delega
 - [Stato progetto TavoloLibero](project_state.md) — cosa c'è, cosa manca, priorità
 - [Architettura pagamenti](payments_architecture.md) — Stripe mock factory, BankAccount multi-IBAN, idempotenza transazionale
+- [Roadmap pagamenti sub-progetti 2-5](payments_roadmap.md) — prossimo: ritenuta 20% + IVA 22%; poi webhook, DAC7, split+refund
