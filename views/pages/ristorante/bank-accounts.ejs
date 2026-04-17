@@ -1,0 +1,95 @@
+<%- include('../../partials/head') %>
+<div class="app-wrap">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar') %>
+  <main class="main-content">
+    <div class="main-inner fade-in-up">
+
+      <h1>Conti del ristorante</h1>
+      <p>Gestisci gli IBAN del ristorante per eseguire bonifici verso la piattaforma e ricevere eventuali accrediti. Il conto contrassegnato come primario viene utilizzato per i pagamenti predefiniti.</p>
+
+      <% if (formErrors && formErrors.length) { %>
+        <div class="alert alert-error">
+          <ul>
+            <% formErrors.forEach(function(e) { %>
+              <li><%= e.field %>: <%= e.message %></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
+
+      <section class="mb-xl">
+        <h2>Conti registrati</h2>
+        <% if (!bankAccounts.length) { %>
+          <p>Nessun conto registrato. Aggiungine uno qui sotto.</p>
+        <% } else { %>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>IBAN</th><th>Intestatario</th><th>Etichetta</th><th>Stato</th><th>Azioni</th></tr>
+              </thead>
+              <tbody>
+                <% bankAccounts.forEach(function(ba) { %>
+                  <tr>
+                    <td><code><%= ba.iban %></code></td>
+                    <td><%= ba.holderName %></td>
+                    <td><%= ba.label || '—' %></td>
+                    <td>
+                      <%= ba.status === 'archived' ? 'archiviato' : (ba.isPrimary ? 'primario' : 'attivo') %>
+                    </td>
+                    <td>
+                      <% if (ba.status === 'active' && !ba.isPrimary) { %>
+                        <form method="post" action="/ristorante/bank-accounts/<%= ba.id %>/primary" style="display:inline">
+                          <button type="submit" class="btn btn-sm btn-outline">Rendi primario</button>
+                        </form>
+                        <form method="post" action="/ristorante/bank-accounts/<%= ba.id %>/archive" style="display:inline">
+                          <button type="submit" class="btn btn-sm btn-outline">Archivia</button>
+                        </form>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </section>
+
+      <section class="card">
+        <div class="card-body">
+          <h2>Aggiungi un conto</h2>
+          <form method="post" action="/ristorante/bank-accounts">
+            <div class="form-group">
+              <label>IBAN (IT)<br>
+                <input type="text" name="iban" required value="<%= (formInput && formInput.iban) || '' %>" placeholder="IT60X0542811101000000123456">
+              </label>
+            </div>
+            <div class="form-group">
+              <label>BIC/SWIFT (opzionale)<br>
+                <input type="text" name="bic" value="<%= (formInput && formInput.bic) || '' %>">
+              </label>
+            </div>
+            <div class="form-group">
+              <label>Intestatario<br>
+                <input type="text" name="holderName" required maxlength="128" value="<%= (formInput && formInput.holderName) || '' %>">
+              </label>
+            </div>
+            <div class="form-group">
+              <label>Codice fiscale intestatario<br>
+                <input type="text" name="holderFiscalCode" required maxlength="16" pattern="[A-Za-z0-9]{16}" value="<%= (formInput && formInput.holderFiscalCode) || '' %>">
+              </label>
+            </div>
+            <div class="form-group">
+              <label>Etichetta (opzionale)<br>
+                <input type="text" name="label" maxlength="64" value="<%= (formInput && formInput.label) || '' %>">
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Aggiungi conto</button>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+<%- include('../../partials/foot') %>

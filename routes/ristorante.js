@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../data/mock');
 const marketplace = require('../data/marketplace-service');
 const { getPrismaClient } = require('../lib/prisma');
+const bankAccountService = require('../data/bank-account-service');
 
 function paymentTermsLabel(days, base) {
   const dayValue = String(days || 'd0').replace('d', '');
@@ -224,6 +225,46 @@ router.get('/messaggi', async (req, res) => {
     activePartnerId: partnerId,
     unreadCount: db.getUnreadCount(req.session.user.id)
   });
+});
+
+router.get('/bank-accounts', async (req, res) => {
+  const restaurantProfileId = res.locals.currentUser && res.locals.currentUser.restaurantProfile && res.locals.currentUser.restaurantProfile.id;
+  if (!restaurantProfileId) return res.redirect('/');
+  try {
+    const bankAccounts = await bankAccountService.listForOwner('restaurant', restaurantProfileId);
+    res.render('pages/ristorante/bank-accounts', { bankAccounts, formErrors: req.session.formErrors || null, formInput: req.session.formInput || {} });
+    req.session.formErrors = null;
+    req.session.formInput = null;
+  } catch (err) {
+    if (err.message === 'prisma_unavailable') return res.status(503).send('Database non disponibile');
+    throw err;
+  }
+});
+
+router.post('/bank-accounts', async (req, res) => {
+  const restaurantProfileId = res.locals.currentUser && res.locals.currentUser.restaurantProfile && res.locals.currentUser.restaurantProfile.id;
+  if (!restaurantProfileId) return res.redirect('/');
+  const result = await bankAccountService.createForOwner('restaurant', restaurantProfileId, req.body);
+  if (!result.ok) {
+    req.session.formErrors = result.errors;
+    req.session.formInput = req.body;
+  }
+  res.redirect('/ristorante/bank-accounts');
+});
+
+router.post('/bank-accounts/:id/primary', async (req, res) => {
+  const restaurantProfileId = res.locals.currentUser && res.locals.currentUser.restaurantProfile && res.locals.currentUser.restaurantProfile.id;
+  if (!restaurantProfileId) return res.redirect('/');
+  await bankAccountService.setPrimary('restaurant', restaurantProfileId, req.params.id);
+  res.redirect('/ristorante/bank-accounts');
+});
+
+router.post('/bank-accounts/:id/archive', async (req, res) => {
+  const restaurantProfileId = res.locals.currentUser && res.locals.currentUser.restaurantProfile && res.locals.currentUser.restaurantProfile.id;
+  if (!restaurantProfileId) return res.redirect('/');
+  const result = await bankAccountService.archive('restaurant', restaurantProfileId, req.params.id);
+  if (!result.ok) req.session.formErrors = [{ field: 'general', message: result.error }];
+  res.redirect('/ristorante/bank-accounts');
 });
 
 module.exports = router;
