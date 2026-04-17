@@ -23,8 +23,10 @@ cookies-*.txt
 tmp/
 output/
 
-# Tooling folders
-.claude/
+# Tooling folders — versioniamo skills/ e settings.json di progetto, non cache/state
+.claude/*
+!.claude/skills/
+!.claude/settings.json
 
 # OS files
 .DS_Store
