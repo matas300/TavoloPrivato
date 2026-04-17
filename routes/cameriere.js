@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../data/mock');
 const marketplace = require('../data/marketplace-service');
 const { getPrismaClient } = require('../lib/prisma');
+const bankAccountService = require('../data/bank-account-service');
 
 function paymentTermsLabel(days, base) {
   const dayValue = String(days || 'd0').replace('d', '');
@@ -177,6 +178,46 @@ router.get('/guida-piva', (req, res) => {
     layout: 'app',
     unreadCount: db.getUnreadCount(req.session.user.id)
   });
+});
+
+router.get('/bank-accounts', async (req, res) => {
+  const workerProfileId = res.locals.currentUser && res.locals.currentUser.workerProfile && res.locals.currentUser.workerProfile.id;
+  if (!workerProfileId) return res.redirect('/');
+  try {
+    const bankAccounts = await bankAccountService.listForOwner('worker', workerProfileId);
+    res.render('pages/cameriere/bank-accounts', { bankAccounts, formErrors: req.session.formErrors || null, formInput: req.session.formInput || {} });
+    req.session.formErrors = null;
+    req.session.formInput = null;
+  } catch (err) {
+    if (err.message === 'prisma_unavailable') return res.status(503).send('Database non disponibile');
+    throw err;
+  }
+});
+
+router.post('/bank-accounts', async (req, res) => {
+  const workerProfileId = res.locals.currentUser && res.locals.currentUser.workerProfile && res.locals.currentUser.workerProfile.id;
+  if (!workerProfileId) return res.redirect('/');
+  const result = await bankAccountService.createForOwner('worker', workerProfileId, req.body);
+  if (!result.ok) {
+    req.session.formErrors = result.errors;
+    req.session.formInput = req.body;
+  }
+  res.redirect('/cameriere/bank-accounts');
+});
+
+router.post('/bank-accounts/:id/primary', async (req, res) => {
+  const workerProfileId = res.locals.currentUser && res.locals.currentUser.workerProfile && res.locals.currentUser.workerProfile.id;
+  if (!workerProfileId) return res.redirect('/');
+  await bankAccountService.setPrimary('worker', workerProfileId, req.params.id);
+  res.redirect('/cameriere/bank-accounts');
+});
+
+router.post('/bank-accounts/:id/archive', async (req, res) => {
+  const workerProfileId = res.locals.currentUser && res.locals.currentUser.workerProfile && res.locals.currentUser.workerProfile.id;
+  if (!workerProfileId) return res.redirect('/');
+  const result = await bankAccountService.archive('worker', workerProfileId, req.params.id);
+  if (!result.ok) req.session.formErrors = [{ field: 'general', message: result.error }];
+  res.redirect('/cameriere/bank-accounts');
 });
 
 module.exports = router;
