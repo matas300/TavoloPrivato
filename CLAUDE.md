@@ -71,6 +71,16 @@ Queste valgono in codice, DB, EJS, PDF, risposte all'utente. Dettaglio completo 
 4. **DAC7.** Raccogliere dati fiscali completi del venditore + IBAN per reporting Agenzia delle Entrate.
 5. **GDPR.** La piattaforma è Titolare del Trattamento, non datore di lavoro — conseguenze su informative, consensi (`Consent` model esiste, è minimale), retention.
 
+## MCP tools disponibili
+
+Il repo espone un MCP server `tavolibero-compliance` (registrato in `.mcp.json`) con tre tool da usare a design-time ogni volta che si modifica codice sensibile:
+
+- `check_fornero_compliance({ workerProfileId, restaurantProfileId })` — valuta la coppia con le soglie operative (200gg/70%); usa `lib/compliance-agent.js`. Richiede Prisma configurato.
+- `simulate_tax_benefits({ ruolo, anni_esperienza, stipendio_netto_mensile_attuale, ... })` — calcola netto forfettario vs dipendente; usa `lib/earnings-simulator.js`.
+- `validate_marketplace_legal_docs({ text, kind })` — cerca termini da subordinazione, termini richiesti, copertura DAC7, flag GDPR; riusa FORBIDDEN_TERMS di `lib/contract-agent.js`.
+
+La skill `.claude/skills/tavolibero-compliance/SKILL.md` impone di invocare questi tool prima di modificare matching, pagamenti, contratti, EJS, PDF. Smoke test: `npm run mcp:smoke`.
+
 ## Conventions
 
 - Cookie jar files (`cookies-*.txt`) and per-port logs (`server-<port>.log`) are local dev artefacts — don't commit generated variants.
