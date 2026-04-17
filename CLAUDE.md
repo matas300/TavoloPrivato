@@ -81,6 +81,19 @@ Il repo espone un MCP server `tavolibero-compliance` (registrato in `.mcp.json`)
 
 La skill `.claude/skills/tavolibero-compliance/SKILL.md` impone di invocare questi tool prima di modificare matching, pagamenti, contratti, EJS, PDF. Smoke test: `npm run mcp:smoke`.
 
+## Pagamenti: Stripe mock vs live
+
+La factory `lib/stripe.js` sceglie l'implementazione via env var:
+
+- `STRIPE_MODE=mock` (default): usa `lib/stripe-mock.js`, nessuna chiamata esterna, scrive `StripeEvent` su DB.
+- `STRIPE_MODE=live`: richiede `STRIPE_SECRET_KEY` e il pacchetto `stripe` installato.
+
+Il mock espone la stessa shape del vero SDK per: `paymentIntents.{create,capture,retrieve}`, `invoices.{create,finalizeInvoice,pay}`, `transfers.create`, `accounts.create`, `customers.create`. Ogni chiamata con side-effect scrive una riga `StripeEvent` con `status=pending` (consumata dal futuro webhook handler).
+
+I BankAccount sono multi-IBAN per worker/ristorante (model `BankAccount`), con `isPrimary` enforced in transazione dal service `data/bank-account-service.js`. Archiviazione = soft-delete (`status='archived'`), niente DELETE fisico per integrità fiscale retroattiva.
+
+Smoke: `npm run smoke:payments`.
+
 ## Conventions
 
 - Cookie jar files (`cookies-*.txt`) and per-port logs (`server-<port>.log`) are local dev artefacts — don't commit generated variants.
