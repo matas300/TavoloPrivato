@@ -12,7 +12,8 @@
     "db:seed": "node prisma/seed.js",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",
-    "payments:run": "node scripts/run-monthly-billing.js"
+    "payments:run": "node scripts/run-monthly-billing.js",
+    "mcp:smoke": "node scripts/smoke-compliance.js"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
@@ -22,6 +23,7 @@
     "express-session": "^1.18.0"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "prisma": "^6.8.2"
   }
 }
