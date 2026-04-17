@@ -1,0 +1,65 @@
+wing: tavololiberoclaudiocodex
+rooms:
+- name: data
+  description: Files from data/
+  keywords:
+  - data
+  - data
+- name: documentation
+  description: Files from docs/
+  keywords:
+  - documentation
+  - docs
+- name: lib
+  description: Files from lib/
+  keywords:
+  - lib
+  - lib
+- name: memory
+  description: Files from memory/
+  keywords:
+  - memory
+  - memory
+- name: middleware
+  description: Files from middleware/
+  keywords:
+  - middleware
+  - middleware
+- name: output
+  description: Files from output/
+  keywords:
+  - output
+  - output
+- name: prisma
+  description: Files from prisma/
+  keywords:
+  - prisma
+  - prisma
+- name: public
+  description: Files from public/
+  keywords:
+  - public
+  - public
+- name: backend
+  description: Files from routes/
+  keywords:
+  - backend
+  - routes
+- name: scripts
+  description: Files from scripts/
+  keywords:
+  - scripts
+  - scripts
+- name: tmp
+  description: Files from tmp/
+  keywords:
+  - tmp
+  - tmp
+- name: frontend
+  description: Files from views/
+  keywords:
+  - frontend
+  - views
+- name: general
+  description: Files that don't fit other rooms
+  keywords: []
