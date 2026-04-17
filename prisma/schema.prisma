@@ -254,6 +254,8 @@ model RestaurantProfile {
   complianceAlerts   ComplianceAlert[]
   interviews         Interview[]
   nonRenewals        NonRenewal[]
+  stripeCustomerId   String?       @unique
+  bankAccounts       BankAccount[]
 
   @@index([brandName])
 }
@@ -313,6 +315,8 @@ model WorkerProfile {
   matchRankings          MatchRanking[]
   interviews             Interview[]
   nonRenewals            NonRenewal[]
+  stripeAccountId        String?       @unique
+  bankAccounts           BankAccount[]
 
   @@index([taxMode, homeCity])
 }
@@ -899,4 +903,42 @@ model OutboxEvent {
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([eventKey, sentAt])
+}
+
+model BankAccount {
+  id                  String    @id @default(cuid())
+  ownerType           String
+  workerProfileId     Int?
+  restaurantProfileId Int?
+  iban                String
+  bic                 String?
+  holderName          String
+  holderFiscalCode    String
+  label               String?
+  isPrimary           Boolean   @default(false)
+  status              String    @default("active")
+  verifiedAt          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  workerProfile       WorkerProfile?     @relation(fields: [workerProfileId], references: [id])
+  restaurantProfile   RestaurantProfile? @relation(fields: [restaurantProfileId], references: [id])
+
+  @@unique([workerProfileId, iban])
+  @@unique([restaurantProfileId, iban])
+  @@index([isPrimary, workerProfileId])
+  @@index([isPrimary, restaurantProfileId])
+}
+
+model StripeEvent {
+  id              String    @id @default(cuid())
+  providerEventId String    @unique
+  eventType       String
+  payload         Json
+  receivedAt      DateTime  @default(now())
+  processedAt     DateTime?
+  status          String    @default("pending")
+  error           String?
+
+  @@index([status, receivedAt])
 }
