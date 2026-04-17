@@ -13,7 +13,8 @@
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",
     "payments:run": "node scripts/run-monthly-billing.js",
-    "mcp:smoke": "node scripts/smoke-compliance.js"
+    "mcp:smoke": "node scripts/smoke-compliance.js",
+    "smoke:payments": "node scripts/smoke-payments.js"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "prisma": "^6.8.2"
+    "prisma": "^6.8.2",
+    "shadcn": "^4.3.0"
   }
 }
