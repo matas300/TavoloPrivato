@@ -1,0 +1,4 @@
+- [Regole di compliance inviolabili](compliance_rules.md) — lessico autonomo, rotazione anti-monocommittenza, split payment: non negoziabili
+- [Decisione stack](stack_decision.md) — restare su Express+Prisma, upgrade SQLite→Postgres a scala, non migrare a Next.js
+- [Preferenze di lavoro utente](user_preferences.md) — KISS, contesto ≤65%, lingua IT, decisioni autonome quando delega
+- [Stato progetto TavoloLibero](project_state.md) — cosa c'è, cosa manca, priorità
