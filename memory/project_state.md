@@ -10,6 +10,10 @@ type: project
 - `lib/contract-agent.js` (~380 LOC): generazione contratti ex art. 2222 C.c. con forbidden-terms validation, snapshot PDF via script Python.
 - `lib/earnings-simulator.js` (~310 LOC): simulatore forfettario vs dipendente per cameriere/sommelier/barman.
 - 35 view EJS (cameriere 7, ristorante 7, admin 8, public 7, partials 5).
+- BankAccount multi-IBAN per worker/ristorante con holder fiscale (DAC7-ready).
+- Stripe mockup SDK-compatible (lib/stripe-mock.js), factory selettiva via STRIPE_MODE (lib/stripe.js).
+- StripeEvent persistito append-only per tutti i side-effect del mock.
+- payment-agent.js refactored: prisma.$transaction + idempotency key per milestone.
 
 **Prototipale (da consolidare):**
 - `lib/payment-agent.js`: milestone + PaymentOrder OK, ma scheduler è `setInterval` senza idempotenza né DLQ. Stripe Connect dichiarato ma non integrato.
@@ -18,9 +22,8 @@ type: project
 
 **Mancante (gap critici per MVP compliant):**
 - **DAC7**: nessun flag `reportable` su invoice/transaction, TaxProfile incompleto per export EU.
-- **BankAccount/IBAN model**: necessario per payout worker e split payment reale.
 - **Split payment verso ristorante**: il modello attuale ha solo % platform vs worker.
-- **Stripe webhook handler**: assente; tutti i payment status sono hardcoded.
+- **Stripe webhook handler**: base persistita (StripeEvent), handler arriverà nel Sub-progetto 3.
 - **Tax mode sync**: `TaxProfile.taxMode` esiste ma non è mai sincronizzato con dichiarazione reale del worker.
 - **Test automatizzati**: zero test suite configurata.
 - **CRUD ServiceRequest/Match da UI**: route mancanti.
