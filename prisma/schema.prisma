@@ -257,6 +257,7 @@ model RestaurantProfile {
   nonRenewals        NonRenewal[]
   stripeCustomerId   String?       @unique
   bankAccounts       BankAccount[]
+  withholdingAccruals WithholdingAccrual[]
 
   @@index([brandName])
 }
@@ -318,6 +319,7 @@ model WorkerProfile {
   nonRenewals            NonRenewal[]
   stripeAccountId        String?       @unique
   bankAccounts           BankAccount[]
+  withholdingAccruals    WithholdingAccrual[]
 
   @@index([taxMode, homeCity])
 }
@@ -949,6 +951,29 @@ model StripeEvent {
   processedAt     DateTime?
   status          String    @default("pending")
   error           String?
+  retryCount      Int       @default(0)
+  lastRetryAt     DateTime?
 
   @@index([status, receivedAt])
+}
+
+model WithholdingAccrual {
+  id                  Int       @id @default(autoincrement())
+  restaurantProfileId Int
+  workerProfileId     Int
+  periodYear          Int
+  periodMonth         Int
+  taxRegimeSnapshot   String
+  totalAmountEur      Float     @default(0)
+  invoiceCount        Int       @default(0)
+  firstInvoiceAt      DateTime
+  lastInvoiceAt       DateTime
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  restaurantProfile   RestaurantProfile @relation(fields: [restaurantProfileId], references: [id], onDelete: Cascade)
+  workerProfile       WorkerProfile     @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantProfileId, workerProfileId, periodYear, periodMonth, taxRegimeSnapshot], name: "accrual_unique_key")
+  @@index([restaurantProfileId, periodYear, periodMonth])
 }
