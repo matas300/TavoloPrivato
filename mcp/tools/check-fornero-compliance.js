@@ -17,7 +17,7 @@ const schema = {
       proposal: {
         type: 'object',
         properties: {
-          grossAmountEur: { type: 'number' },
+          taxableAmountEur: { type: 'number' },
           estimatedServiceDays: { type: 'number' }
         }
       }

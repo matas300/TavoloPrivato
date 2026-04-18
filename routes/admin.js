@@ -208,7 +208,7 @@ router.get('/legal-billing', async (req, res) => {
       workerName: item.workerProfile.user.displayName,
       restaurantName: item.restaurantProfile.brandName,
       objectiveSummary: item.objectiveSummary,
-      totalGrossEur: item.grossAmountEur,
+      totalGrossEur: item.taxableAmountEur,
       pdfUrl: item.pdfUrl,
       paymentTerms: `${String(item.paymentTermsDays || 'd0').replace('d', '')} giorni ${item.paymentTermsBase === 'end_of_month' ? 'fine mese' : 'data fattura'}`,
       milestoneCount: item.milestones.length,

@@ -536,7 +536,7 @@ model ServiceContract {
   engagementType      EngagementType      @default(one_off)
   objectiveSummary    String?
   scopeOfWorkJson     Json?
-  grossAmountEur      Float
+  taxableAmountEur      Float
   platformFeeEur      Float
   workerNetEur        Float
   serviceDate         DateTime
@@ -575,7 +575,7 @@ model ContractMilestone {
   periodEnd           DateTime
   invoiceDate         DateTime
   dueDate             DateTime
-  grossAmountEur      Float
+  taxableAmountEur      Float
   platformFeeEur      Float
   workerNetEur        Float
   status              MilestoneStatus   @default(planned)

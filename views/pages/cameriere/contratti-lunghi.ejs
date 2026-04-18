@@ -78,7 +78,7 @@
               <div class="surface-muted" style="min-width:300px">
                 <div class="detail-list">
                   <div class="detail-row"><span class="text-sm text-muted">Periodo</span><strong><%= new Date(contract.serviceStartDate).toLocaleDateString('it-IT') %> - <%= new Date(contract.serviceEndDate).toLocaleDateString('it-IT') %></strong></div>
-                  <div class="detail-row"><span class="text-sm text-muted">Corrispettivo totale</span><strong>EUR <%= contract.grossAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+                  <div class="detail-row"><span class="text-sm text-muted">Corrispettivo totale</span><strong>EUR <%= contract.taxableAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
                   <div class="detail-row"><span class="text-sm text-muted">Netto professionista</span><strong style="color:var(--olive)">EUR <%= contract.workerNetEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
                   <div class="detail-row"><span class="text-sm text-muted">Fee piattaforma</span><strong>EUR <%= contract.platformFeeEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
                 </div>
@@ -107,7 +107,7 @@
                       <td><%= milestone.milestoneLabel %></td>
                       <td><%= milestone.invoiceNumber || new Date(milestone.invoiceDate).toLocaleDateString('it-IT') %></td>
                       <td><%= new Date(milestone.dueDate).toLocaleDateString('it-IT') %></td>
-                      <td>EUR <%= milestone.grossAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                      <td>EUR <%= milestone.taxableAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
                       <td>EUR <%= milestone.feeAmountEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
                       <td>EUR <%= milestone.workerNetEur.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
                       <td>

@@ -93,7 +93,7 @@ def build_story(payload):
     story.append(
         Paragraph(
             f"Periodo contrattuale: dal <b>{fmt_date(contract['serviceStartDate'])}</b> al <b>{fmt_date(contract['serviceEndDate'])}</b>. "
-            f"Corrispettivo complessivo: <b>{fmt_eur(contract['grossAmountEur'])}</b>.",
+            f"Corrispettivo complessivo: <b>{fmt_eur(contract['taxableAmountEur'])}</b>.",
             styles["body"],
         )
     )
@@ -114,7 +114,7 @@ def build_story(payload):
             [
                 item["milestoneLabel"],
                 f"{fmt_date(item['periodStart'])} - {fmt_date(item['periodEnd'])}",
-                fmt_eur(item["grossAmountEur"]),
+                fmt_eur(item["taxableAmountEur"]),
                 fmt_eur(item["platformFeeEur"]),
                 fmt_eur(item["workerNetEur"]),
                 fmt_date(item["dueDate"]),

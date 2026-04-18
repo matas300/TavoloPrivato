@@ -446,7 +446,7 @@ async function seedContractsAndPayments() {
           `Gestione del servizio ${contract.tipo}`,
           'Presidio ospiti, flusso tavoli e coordinamento operativo della sala'
         ],
-        grossAmountEur: contract.compensoCam + contract.commissione,
+        taxableAmountEur: contract.compensoCam + contract.commissione,
         platformFeeEur: contract.commissione,
         workerNetEur: contract.compensoCam,
         serviceDate: parseDate(contract.data),
@@ -498,7 +498,7 @@ async function seedContractsAndPayments() {
         periodEnd: parseDate(contract.data),
         invoiceDate: parseDate(contract.data, '18:00:00'),
         dueDate: parseDate(contract.data, '18:00:00'),
-        grossAmountEur: contract.compensoCam + contract.commissione,
+        taxableAmountEur: contract.compensoCam + contract.commissione,
         platformFeeEur: contract.commissione,
         workerNetEur: contract.compensoCam,
         status: contract.stato === 'confermato' ? 'processing' : 'paid',

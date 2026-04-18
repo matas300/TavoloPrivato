@@ -94,7 +94,7 @@
           <td>${escapeHtml(item.milestoneLabel)}</td>
           <td>${toDateLabel(item.invoiceDate)}</td>
           <td>${toDateLabel(item.dueDate)}</td>
-          <td>EUR ${toMoney(item.grossAmountEur)}</td>
+          <td>EUR ${toMoney(item.taxableAmountEur)}</td>
           <td>EUR ${toMoney(item.workerNetEur)}</td>
         </tr>
       `)

@@ -75,7 +75,7 @@
     complianceButton.addEventListener('click', async () => {
       const workerProfileId = parseInt(document.getElementById('compliance-worker').value, 10);
       const restaurantProfileId = parseInt(document.getElementById('compliance-restaurant').value, 10);
-      const grossAmountEur = parseFloat(document.getElementById('compliance-gross').value);
+      const taxableAmountEur = parseFloat(document.getElementById('compliance-gross').value);
       const estimatedServiceDays = parseInt(document.getElementById('compliance-days').value, 10);
 
       try {
@@ -85,7 +85,7 @@
         const result = await postJson('/api/contracts/compliance-check', {
           workerProfileId,
           restaurantProfileId,
-          grossAmountEur,
+          taxableAmountEur,
           estimatedServiceDays
         });
 

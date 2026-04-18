@@ -104,7 +104,7 @@ router.get('/compliance/pairs/:workerId/:restaurantId', async (req, res) => {
       restaurantProfileId: parseInt(req.params.restaurantId, 10),
       proposal: projectedGrossAmountEur && estimatedServiceDays
         ? {
-          grossAmountEur: projectedGrossAmountEur,
+          taxableAmountEur: projectedGrossAmountEur,
           estimatedServiceDays
         }
         : null
@@ -483,9 +483,9 @@ router.post('/contracts/compliance-check', async (req, res) => {
     const evaluation = await evaluatePairCompliance(prisma, {
       workerProfileId: parseInt(req.body.workerProfileId, 10),
       restaurantProfileId: parseInt(req.body.restaurantProfileId, 10),
-      proposal: req.body.grossAmountEur && req.body.estimatedServiceDays
+      proposal: req.body.taxableAmountEur && req.body.estimatedServiceDays
         ? {
-          grossAmountEur: parseFloat(req.body.grossAmountEur),
+          taxableAmountEur: parseFloat(req.body.taxableAmountEur),
           estimatedServiceDays: parseInt(req.body.estimatedServiceDays, 10)
         }
         : null

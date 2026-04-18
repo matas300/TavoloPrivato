@@ -179,7 +179,7 @@ router.get('/contratti-lunghi', async (req, res) => {
       serviceStartDate: contract.serviceStartDate || contract.serviceDate,
       serviceEndDate: contract.serviceEndDate || contract.serviceDate,
       monthlyGrossAmountEur: contract.monthlyGrossAmountEur,
-      grossAmountEur: contract.grossAmountEur,
+      taxableAmountEur: contract.taxableAmountEur,
       platformFeeEur: contract.platformFeeEur,
       workerNetEur: contract.workerNetEur,
       paymentTermsLabel: paymentTermsLabel(contract.paymentTermsDays, contract.paymentTermsBase),
@@ -190,7 +190,7 @@ router.get('/contratti-lunghi', async (req, res) => {
         milestoneLabel: item.milestoneLabel,
         invoiceDate: item.invoiceDate,
         dueDate: item.dueDate,
-        grossAmountEur: item.grossAmountEur,
+        taxableAmountEur: item.taxableAmountEur,
         workerNetEur: item.workerNetEur,
         status: item.status,
         invoiceStatus: item.invoices[0]?.invoiceStatus || null

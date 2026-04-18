@@ -20,7 +20,7 @@ File: `lib/compliance-agent.js`
   - `80%` di concentrazione su un solo committente negli ultimi `24` mesi.
   - ex datore negli ultimi `24` mesi.
 - `isSeniorExempt`/`safeHarborCandidate` trattati come esclusione dai blocchi automatici secondo regola di prodotto richiesta.
-- Supporto a valutazione predittiva con proposta futura (`grossAmountEur`, `estimatedServiceDays`).
+- Supporto a valutazione predittiva con proposta futura (`taxableAmountEur`, `estimatedServiceDays`).
 - Persistenza in `PairMetric`, `ComplianceSnapshot`, `ComplianceAlert`.
 
 ### ContractAgent
