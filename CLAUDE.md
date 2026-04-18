@@ -90,9 +90,34 @@ La factory `lib/stripe.js` sceglie l'implementazione via env var:
 
 Il mock espone la stessa shape del vero SDK per: `paymentIntents.{create,capture,retrieve}`, `invoices.{create,finalizeInvoice,pay}`, `transfers.create`, `accounts.create`, `customers.create`. Ogni chiamata con side-effect scrive una riga `StripeEvent` con `status=pending` (consumata dal futuro webhook handler).
 
+Il mock espone anche un **evento virtuale non-Stripe-native** `stripe.withholding.report(params, { idempotencyKey })` che scrive `StripeEvent(eventType='withholding.reported')`. Usato dal `payment-agent` quando una Invoice ha ritenuta > 0 — vedi sezione "Calcolo fiscale ritenuta".
+
 I BankAccount sono multi-IBAN per worker/ristorante (model `BankAccount`), con `isPrimary` enforced in transazione dal service `data/bank-account-service.js`. Archiviazione = soft-delete (`status='archived'`), niente DELETE fisico per integrità fiscale retroattiva.
 
 Smoke: `npm run smoke:payments`.
+
+## Calcolo fiscale ritenuta (Sub-progetto 2)
+
+Il modulo `lib/tax-calculator.js` è una funzione pura `computeInvoiceTaxes({ taxableEur, platformFeeEur, taxMode, workerProfileId })`. Il `payment-agent` lo invoca nel **precheck fuori transaction**: se `workerProfile.taxMode` è `unknown` o mancante, la milestone viene saltata (status resta `planned`), il ciclo mensile continua sulle altre e accumula gli skip in `result.skipped[]`.
+
+**Ruolo marketplace: intermediario puro, non sostituto d'imposta.** L'art. 23 DPR 600/73 identifica il committente (ristorante) come sostituto d'imposta — è il ristorante che trattiene la ritenuta 20% dal pagamento che fa al marketplace e la versa con F24 codice tributo 1040 entro il 16 del mese successivo, e rilascia la CU al worker entro il 16 marzo dell'anno successivo. Il marketplace **registra** la ritenuta (via campi `withholdingAmountEur` su Invoice/Payout, entry `withholding_reported` su EscrowLedger, evento virtuale `withholding.reported` su StripeEvent) per audit, futuro report F24 al ristorante e DAC7 — **ma non tocca cash della ritenuta**.
+
+**Lo schema reale vive su `WorkerProfile.taxMode`** (non su `TaxProfile`): `enum TaxMode { forfettario | autonomo_occasionale | partita_iva_ordinaria | unknown }`.
+
+**Matrice sub-2** (taxable=1000, fee=100):
+
+| regime                 | withholding | totalDue (rist→mkt) | netToWorker (mkt→worker) |
+|------------------------|-------------|---------------------|--------------------------|
+| forfettario            | 0           | 1000                | 900                      |
+| autonomo_occasionale   | 200         | 800                 | 700                      |
+| partita_iva_ordinaria  | 200         | 800                 | 700                      |
+| unknown                | SKIP        | —                   | —                        |
+
+`partita_iva_ordinaria` avrà IVA 22% pass-through in Sub-progetto 6 (oggi stessi numeri di `autonomo_occasionale`, `taxRegimeSnapshot` comunque distinto).
+
+La `Invoice` congela `taxRegimeSnapshot` al momento dell'emissione per coerenza audit/PDF/CU.
+
+Smoke: `npm run smoke:payments` (43 check su 4 scenari).
 
 ## Conventions
 

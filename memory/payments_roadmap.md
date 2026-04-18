@@ -4,22 +4,25 @@ description: Sub-progetti "soldi che si muovono" aggiornata 2026-04-18 con sub-6
 type: project
 ---
 
-**Stato:** Sub-progetto 1 ✅ completato 2026-04-17 su branch `feat/compliance-mcp`. Commit finale `9c8510d`. Smoke `npm run smoke:payments` → 14/14, `npm run mcp:smoke` → 5/5.
+**Stato:** Sub-progetto 1 ✅ completato 2026-04-17. Sub-progetto 2 ✅ completato 2026-04-18 su branch `feat/compliance-mcp`. Smoke `npm run smoke:payments` → 43/43 (4 scenari), `npm run mcp:smoke` → 5/5.
 
 **Decomposizione "soldi che si muovono" aggiornata:**
 
-1. ✅ **Sub-progetto 1 — BankAccount + Stripe mockup + payment-agent idempotente.** Done. Vedi `payments_architecture.md` e `docs/superpowers/specs/2026-04-17-payments-subproject-1-design.md`.
+1. ✅ **Sub-progetto 1 — BankAccount + Stripe mockup + payment-agent idempotente.** Done 2026-04-17. Vedi `payments_architecture.md` e `docs/superpowers/specs/2026-04-17-payments-subproject-1-design.md`.
 
-2. ⏭ **Sub-progetto 2 — Ritenuta d'acconto 20%** (IN CORSO).
-   - **SCOPE RIDOTTO**: solo ritenuta 20%. IVA spostata a sub-6 per complessità.
-   - **Rename semantico**: `grossAmountEur → taxableAmountEur` (62 occorrenze, task dedicato).
-   - Ritenuta 20% su compensi a `autonomo_occasionale` e `partita_iva_ordinaria`.
-   - **Ruolo marketplace**: intermediario puro, NON sostituto d'imposta. Il ristorante è sostituto (art. 23 DPR 600/73). Marketplace calcola e registra la ritenuta ma non la trattiene cash. Vedi skill `finance/commercialista-italiano`.
-   - Enum `TaxMode` esteso con `partita_iva_ordinaria`.
-   - Tocca: `lib/payment-agent.js`, `lib/tax-calculator.js` (nuovo), schema `Invoice`/`Payout`/`PaymentOrder` (colonne ritenuta + totalDue + snapshot regime + rename).
-   - Precheck: `taxMode === 'unknown'` → hard-skip della milestone, report nel ciclo mensile.
-   - Out of scope: IVA (sub-6), onboarding UI (sub-2b), INPS gestione separata, fattura elettronica SdI, CU annuale.
+2. ✅ **Sub-progetto 2 — Ritenuta d'acconto 20%.** Done 2026-04-18.
+   - Rename semantico `grossAmountEur → taxableAmountEur` completato (62 occorrenze, 18 file, migration data-preserving).
+   - Ritenuta 20% su `autonomo_occasionale` e `partita_iva_ordinaria` via `lib/tax-calculator.js` puro.
+   - Marketplace = intermediario puro, NON sostituto d'imposta. Il ristorante è sostituto giuridico (art. 23 DPR 600/73). La ritenuta viene registrata per audit/F24-report/DAC7 ma nessun cash della ritenuta passa dalla piattaforma.
+   - Enum `TaxMode` esteso con `partita_iva_ordinaria`. **Scoperta**: `taxMode` vive su `WorkerProfile`, non su `TaxProfile`.
+   - Nuovi campi Invoice: `taxableAmountEur, withholdingRate, withholdingAmountEur, totalDueEur, netToWorkerEur, taxRegimeSnapshot`.
+   - Nuovi campi Payout: `withholdingAmountEur`.
+   - Nuovi campi PaymentOrder: `totalDueEur`.
+   - Evento virtuale `stripe.withholding.report()` → StripeEvent(eventType='withholding.reported').
+   - EscrowLedger: nuova entry `withholding_reported` quando ritenuta > 0.
+   - Precheck `taxMode === 'unknown'` → hard-skip milestone (status=planned), report nel ciclo mensile. `TaxModeUnknownError` con code TAX_MODE_UNKNOWN.
    - Spec: `docs/superpowers/specs/2026-04-18-payments-subproject-2-design.md`.
+   - Plan: `docs/superpowers/plans/2026-04-18-payments-subproject-2.md`.
 
 2b. ⏸ **Sub-progetto 2b — Onboarding fiscale worker UI.**
     - Form cameriere per dichiarare regime fiscale (forfettario / autonomo_occasionale / partita_iva_ordinaria).

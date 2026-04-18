@@ -27,3 +27,11 @@ Why: obbligo EU dal 2023, sanzioni piattaforma se assente.
 How to apply: estendere `TaxProfile` con campi fiscali completi e aggiungere flag `reportable` su transaction/invoice. Non esiste ancora nello schema.
 
 **5. GDPR: piattaforma è Titolare del Trattamento, non datore di lavoro.** Conseguenza di design: informativa privacy, consensi espliciti (già c'è `Consent` model minimale), DPA con Stripe, retention policy.
+
+**6. Marketplace NON è sostituto d'imposta.** TavoloLibero è marketplace intermediario puro (art. 23 DPR 600/73): il contratto di prestazione è tra worker e ristorante (art. 2222 C.c.), la piattaforma facilita e trattiene commissione. La **ritenuta d'acconto 20%** (per `autonomo_occasionale` e `partita_iva_ordinaria`) la trattiene il **ristorante** dal pagamento che fa alla piattaforma, e la versa con F24 cod. 1040 entro il 16 del mese successivo. Rilascia la CU al worker entro il 16 marzo anno successivo.
+
+Why: se la piattaforma trattenesse e versasse la ritenuta, assumerebbe il ruolo di sostituto d'imposta e renderebbe il modello Merchant of Record (MOR), con obbligo di P.IVA marketplace, LIPE, 770, CU — overkill per un marketplace intermediario.
+
+How to apply: `lib/tax-calculator.js` calcola gli importi; `lib/payment-agent.js` li persiste su Invoice/Payout/EscrowLedger e scrive `StripeEvent(withholding.reported)` per audit. Nessun cash della ritenuta passa dalla piattaforma. Nelle UI/PDF mai scrivere "trattieni la ritenuta" o "versiamo per te": il marketplace la **evidenzia**, il ristorante la **versa**. Sub-progetto 2c esporrà un report F24 aggregato al ristorante.
+
+Ragionamento fiscale esteso in skill `finance/commercialista-italiano`. Prima di andare in produzione, validazione vincolante con commercialista iscritto all'albo.
