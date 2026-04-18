@@ -3,12 +3,24 @@
     "mempalace": {
       "type": "stdio",
       "command": "python",
-      "args": ["-m", "mempalace.mcp_server"]
+      "args": [
+        "-m",
+        "mempalace.mcp_server"
+      ]
     },
     "tavolibero-compliance": {
       "type": "stdio",
       "command": "node",
-      "args": ["./mcp/server.js"]
+      "args": [
+        "./mcp/server.js"
+      ]
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }
