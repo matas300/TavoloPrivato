@@ -625,6 +625,7 @@ model PaymentOrder {
   amountTotalEur          Float
   platformFeeEur          Float
   payoutAmountEur         Float
+  totalDueEur             Float?
   status                  PaymentStatus
   scheduledCaptureAt      DateTime?
   capturedAt              DateTime?
@@ -657,6 +658,7 @@ model Payout {
   paymentOrderId Int           @unique
   workerProfileId Int
   payoutAmountEur Float
+  withholdingAmountEur Float    @default(0)
   status         PayoutStatus
   releasedAt     DateTime?
   paymentOrder   PaymentOrder  @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
@@ -688,6 +690,13 @@ model Invoice {
   pdfUrl              String?
   paymentTermsDays    PaymentTermsDays?
   paymentTermsBase    PaymentTermsBase?
+  // Campi fiscali sub-2 (ritenuta d'acconto 20%, marketplace intermediario puro)
+  taxableAmountEur      Float?
+  withholdingRate       Float    @default(0)
+  withholdingAmountEur  Float    @default(0)
+  totalDueEur           Float?
+  netToWorkerEur        Float?
+  taxRegimeSnapshot     String?
   paymentOrder        PaymentOrder      @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
   serviceContract     ServiceContract?  @relation(fields: [serviceContractId], references: [id], onDelete: SetNull)
   contractMilestone   ContractMilestone? @relation(fields: [contractMilestoneId], references: [id], onDelete: SetNull)
