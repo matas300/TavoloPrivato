@@ -28,6 +28,7 @@ enum IdentityProvider {
 enum TaxMode {
   forfettario
   autonomo_occasionale
+  partita_iva_ordinaria
   unknown
 }
 
