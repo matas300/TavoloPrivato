@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
       name: item.cameriere.name,
       total: item.totalCost
     }))
-  ) %>;
+  ).replace(/</g, '\\u003c') %>;
   new Chart(ctx, {
     type: 'doughnut',
     data: {
