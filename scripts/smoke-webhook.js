@@ -85,6 +85,11 @@ async function main() {
   if (!prisma) { console.error('prisma_unavailable'); process.exit(2); }
   const stripe = getStripe();
 
+  // Cleanup residui da smoke precedenti: StripeEvent non-processed (pending/failed/dead)
+  // possono restare orfani da smoke-payments (invoice cancellata ma event no) e inquinare
+  // il replay check. Non tocchiamo status=processed (append-only storico).
+  await prisma.stripeEvent.deleteMany({ where: { status: { in: ['pending', 'failed', 'dead'] } } });
+
   const contract = await setupFixture(prisma, stripe);
   const originalTaxMode = contract.workerProfile.taxMode;
   const milestoneIds = [];
