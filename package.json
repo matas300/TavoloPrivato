@@ -14,7 +14,8 @@
     "db:validate": "prisma validate",
     "payments:run": "node scripts/run-monthly-billing.js",
     "mcp:smoke": "node scripts/smoke-compliance.js",
-    "smoke:payments": "node scripts/smoke-payments.js"
+    "smoke:payments": "node scripts/smoke-payments.js",
+    "smoke:webhook": "node scripts/smoke-webhook.js"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
