@@ -160,7 +160,12 @@ const apiRoutes = require('./routes/api');
 const cameriereRoutes = require('./routes/cameriere');
 const ristoranteRoutes = require('./routes/ristorante');
 const adminRoutes = require('./routes/admin');
+const webhooksRoutes = require('./routes/webhooks');
 const { requireAuth, requireRole } = require('./middleware/auth');
+
+// Public webhook endpoint (bypass auth: Stripe calls without session).
+// Must be mounted BEFORE any requireAuth-protected routes.
+app.use('/webhooks', webhooksRoutes);
 
 app.use('/', authRoutes);
 app.use('/api', apiRoutes);
