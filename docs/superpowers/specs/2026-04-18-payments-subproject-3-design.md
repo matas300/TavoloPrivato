@@ -16,7 +16,7 @@ Stato dopo sub-1 + sub-2 (vedi `memory/payments_architecture.md`):
 
 - `StripeEvent` è la tabella append-only che il mock `stripe-mock.js` alimenta per ogni side-effect. Ogni riga nasce con `status='pending'`. Non esiste ancora un consumer.
 - Gli event type attualmente scritti:
-  - `payment_intent.created`, `payment_intent.captured` (dal mock `paymentIntents.{create,capture}`)
+  - `payment_intent.created`, `payment_intent.succeeded` (dal mock `paymentIntents.{create,capture}`)
   - `invoice.created`, `invoice.finalized`, `invoice.paid` (dal mock `invoices.*`)
   - `transfer.created` (dal mock `transfers.create`)
   - `account.created`, `customer.created` (dal mock `accounts.*`, `customers.*`)
@@ -31,7 +31,7 @@ Stato dopo sub-1 + sub-2 (vedi `memory/payments_architecture.md`):
 - Nuovo modulo `lib/webhook-processor.js` — registry `{ eventType: handler }`, funzione `processEvent(prisma, stripeEvent)` pura (no HTTP), funzione `processPending(prisma, { limit, maxRetries })` batch.
 - Handler per i 3 event type "operativi":
   - `invoice.paid` — idempotent re-check Invoice.status=paid (già fatto dal payment-agent; qui audit/sync).
-  - `payment_intent.captured` — idempotent re-check PaymentOrder.status=captured.
+  - `payment_intent.succeeded` — idempotent re-check PaymentOrder.status=captured.
   - `withholding.reported` — **upsert `WithholdingAccrual`** aggregando per `(restaurantProfileId, workerProfileId, periodYear, periodMonth, taxRegimeSnapshot)`.
 - Handler no-op registrati come processed (log + set status=processed, nessun side-effect) per: `payment_intent.created`, `invoice.created`, `invoice.finalized`, `transfer.created`, `account.created`, `customer.created`.
 - Route HTTP:
@@ -118,7 +118,7 @@ model StripeEvent {
 Ogni handler deve essere idempotente sugli effetti: ri-processare un evento già applicato NON deve generare duplicati.
 
 - `withholding.reported` — l'upsert su `WithholdingAccrual` non è trivialmente idempotente (ogni replay sommerebbe di nuovo l'importo). Soluzione: prima di sommare, check `StripeEvent.status`. Se già processed, skip (no-op). Il controllo è già nel wrapper `processEvent`: se evento già processed, ritorna immediatamente senza chiamare handler. Quindi la replay-safety è garantita dal wrapper, non dal handler.
-- `invoice.paid` / `payment_intent.captured` — handler è idempotent di natura: setta uno stato a un valore target, se era già quel valore è no-op.
+- `invoice.paid` / `payment_intent.succeeded` — handler è idempotent di natura: setta uno stato a un valore target, se era già quel valore è no-op.
 
 **Motivo**: centralizzare l'idempotenza nel wrapper evita duplicazione di logica e previene bug.
 
@@ -142,7 +142,7 @@ Il webhook mock accetta payload minimale: `{ providerEventId: 'evt_mock_...' }`.
 ```javascript
 const handlers = {
   'invoice.paid': handleInvoicePaid,
-  'payment_intent.captured': handlePaymentIntentCaptured,
+  'payment_intent.succeeded': handlePaymentIntentSucceeded,
   'withholding.reported': handleWithholdingReported,
   // no-op handlers
   'payment_intent.created': noop,
