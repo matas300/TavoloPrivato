@@ -1,10 +1,10 @@
 ---
 name: Architettura pagamenti TavoloLibero
-description: Come funziona il flusso soldi oggi (Sub-progetto 1 + 2 completati), cosa manca, estensioni programmate
+description: Come funziona il flusso soldi oggi (Sub-progetto 1 + 2 + 3 completati), cosa manca, estensioni programmate
 type: project
 ---
 
-**Stato al 2026-04-18 (Sub-progetto 2 done):**
+**Stato al 2026-04-19 (Sub-progetti 1+2+3 done):**
 
 Il motore pagamenti calcola la ritenuta d'acconto 20% per regimi non-forfettari in modo fedele al modello giuridico: **marketplace intermediario puro, non sostituto d'imposta**. Il ristorante resta sostituto giuridico (art. 23 DPR 600/73), trattiene la ritenuta dal pagamento che fa alla piattaforma, e la versa con F24 cod. 1040.
 
@@ -31,12 +31,27 @@ Il motore pagamenti calcola la ritenuta d'acconto 20% per regimi non-forfettari 
 | partita_iva_ordinaria | 200         | 800      | 700         | 4 (+wh_rep)   |
 | unknown               | SKIP        | —        | —           | —             |
 
+**Nuovo (sub-3): webhook handler asincrono.**
+
+- `lib/webhook-processor.js` — processor sync in-process. Registry `handlers[eventType]`: 3 operativi (`invoice.paid`, `payment_intent.succeeded`, `withholding.reported`) + 6 noop. Wrapper `processEvent` idempotente (skip se `status=processed`). `processPending(batch)` e `processPendingRetry(solo failed)`.
+- `lib/stripe-signature.js` — stub. Mock accetta tutto; live throws finché HMAC SHA-256 non implementato.
+- Model `WithholdingAccrual` — aggregato mensile ritenuta per `(restaurant, worker, year, month, regime)`, base per report F24 Sub-progetto 2c.
+- `StripeEvent` esteso con `retryCount` e `lastRetryAt`. Retry cascade: `pending` → `failed` (retryCount++) → `dead` (a `retryCount >= maxRetries`, default 3). Event type sconosciuti vanno in DLQ con `error` esplicito.
+- Endpoint `POST /webhooks/stripe` (public, bypass auth, payload `{ providerEventId }`). Admin: `POST /admin/webhooks/process-pending`, `POST /admin/webhooks/retry-failed`, `GET /admin/webhooks/stats`.
+
+**Flusso end-to-end ora:**
+
+1. `payment-agent` scrive `StripeEvent(status=pending)` via `lib/stripe-mock`.
+2. `webhook-processor` processa (batch via `/admin/webhooks/process-pending` o singolo via `/webhooks/stripe`) → `status=processed`.
+3. Handler `withholding.reported` alimenta `WithholdingAccrual` (base sub-2c).
+4. Eventi con type non nel registry → `failed`/`dead`, visibili in `GET /admin/webhooks/stats`.
+
 **Cosa NON c'è ancora:**
 
 - IVA 22% pass-through (Sub-progetto 6).
 - Onboarding UI fiscale worker (Sub-progetto 2b) — oggi `taxMode` è settato solo da seed e lo smoke lo patcha runtime.
-- Report F24 + CU aggregato per ristorante (Sub-progetto 2c).
-- Webhook handler che consuma `StripeEvent.status=pending` → `processed` (Sub-progetto 3). Include consumption di `withholding.reported`.
+- Report F24 + CU aggregato per ristorante (Sub-progetto 2c). Base dati ora presente in `WithholdingAccrual`.
+- HMAC SHA-256 reale in `lib/stripe-signature.js` per `STRIPE_MODE=live`.
 - DAC7 `reportable` flag + export annuale (Sub-progetto 4).
 - Refund flow completo con rimborso ritenuta/IVA pro-quota (Sub-progetto 5).
 
@@ -44,6 +59,7 @@ Il motore pagamenti calcola la ritenuta d'acconto 20% per regimi non-forfettari 
 
 - `npm run smoke:payments` → 43/43 (4 scenari: forfettario, auth_occ, P.IVA ord, unknown skip).
 - `npm run mcp:smoke` → 5/5 (compliance, invariato).
+- `npm run smoke:webhook` → 17/17 (batch, aggregation, replay-safety, retry cascade, DLQ).
 
 **How to apply:** quando tocchi codice payment:
 - Importa Stripe da `lib/stripe`, mai da `stripe-mock` direttamente.

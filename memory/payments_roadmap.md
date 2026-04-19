@@ -1,10 +1,10 @@
 ---
 name: Roadmap pagamenti TavoloLibero (sub-progetti 2-6)
-description: Sub-progetti "soldi che si muovono" aggiornata 2026-04-18 con sub-6 IVA e sub-2b onboarding
+description: Sub-progetti "soldi che si muovono" aggiornata 2026-04-19 con sub-3 done, sub-6 IVA e sub-2b onboarding
 type: project
 ---
 
-**Stato:** Sub-progetto 1 ✅ completato 2026-04-17. Sub-progetto 2 ✅ completato 2026-04-18 su branch `feat/compliance-mcp`. Smoke `npm run smoke:payments` → 43/43 (4 scenari), `npm run mcp:smoke` → 5/5.
+**Stato:** Sub-progetto 1 ✅ 2026-04-17. Sub-progetto 2 ✅ 2026-04-18. Sub-progetto 3 ✅ 2026-04-19. Tutti su branch `feat/compliance-mcp`. Smoke: `smoke:payments` 43/43, `mcp:smoke` 5/5, `smoke:webhook` 17/17.
 
 **Decomposizione "soldi che si muovono" aggiornata:**
 
@@ -37,7 +37,18 @@ type: project
     - Entro il 16 del mese successivo (per F24), entro 16 marzo anno successivo (per CU).
     - Il ristorante deve effettuare il versamento F24 da solo; il marketplace fornisce solo il dato aggregato.
 
-3. **Sub-progetto 3 — Webhook handler (simulato).** Consuma `StripeEvent.status='pending'` → `processed`. Route HTTP `/webhooks/stripe` + processor con retry/DLQ. Trigger manuale per test (non serve HTTP Stripe reale, basta un endpoint admin che "fires" gli eventi pending). Include eventi `withholding.reported` che sub-2 genera.
+3. ✅ **Sub-progetto 3 — Webhook handler (simulato).** Done 2026-04-19.
+   - `lib/webhook-processor.js` (172 LOC): registry `handlers[eventType]`, wrapper `processEvent` idempotente (skip se `status=processed`), `processPending` (batch) e `processPendingRetry` (solo failed).
+   - Handler operativi: `invoice.paid`, `payment_intent.succeeded`, `withholding.reported` (upsert su `WithholdingAccrual`). Handler noop: `payment_intent.created`, `invoice.{created,finalized}`, `transfer.created`, `account.created`, `customer.created`.
+   - Nuovo model `WithholdingAccrual` con unique composta `(restaurant, worker, year, month, regime)` → base per Sub-progetto 2c.
+   - `StripeEvent` esteso con `retryCount` e `lastRetryAt`. Retry cascade: pending → failed → dead a `maxRetries=3`.
+   - `lib/stripe-signature.js` — stub: mock accetta tutto, live throws finché HMAC SHA-256 non implementato.
+   - Endpoint pubblico `POST /webhooks/stripe` (bypass auth, payload `{ providerEventId }`).
+   - Endpoint admin: `POST /admin/webhooks/process-pending`, `POST /admin/webhooks/retry-failed`, `GET /admin/webhooks/stats`.
+   - Bug fix durante sviluppo: registry aveva chiave inventata `payment_intent.captured`; allineata al nome Stripe reale `payment_intent.succeeded` (commit `4e6d514`).
+   - Spec: `docs/superpowers/specs/2026-04-18-payments-subproject-3-design.md`.
+   - Plan: `docs/superpowers/plans/2026-04-18-payments-subproject-3.md`.
+   - Smoke: `npm run smoke:webhook` → 17/17.
 
 4. **Sub-progetto 4 — DAC7 reporting.** Flag `reportable` su `Invoice`, export JSON/XML annuo per Agenzia delle Entrate, soglia €2000/30 tx per seller. Richiede `TaxProfile` completo (codice fiscale, IBAN primary, residenza fiscale). Dipende da sub-2b.
 
@@ -60,10 +71,10 @@ type: project
 
 Poi avviare il flusso superpowers: `brainstorming` (scope/decisioni) → `writing-plans` → `subagent-driven-development`. Branch dedicato (o continuare su `feat/compliance-mcp` se non ancora mergiato — verificare con `git log main..HEAD`). Riusare il pattern già collaudato: task piccoli, spec review + quality review, commit frequenti, smoke test finale.
 
-**Ordine suggerito di merge (post sub-2):**
-1. sub-2b (onboarding) — sblocca sub-2 in produzione.
-2. sub-6 (IVA) — completa la fiscalità base.
-3. sub-3 (webhook) — consuma StripeEvent.
-4. sub-2c (report F24/CU) — dà al ristorante gli strumenti operativi.
-5. sub-4 (DAC7) — compliance reporting annuale.
-6. sub-5 (refund) — ultimo perché i refund coinvolgono tutti gli altri flussi.
+**Ordine suggerito prossimi step (post sub-3):**
+1. sub-2b (onboarding UI fiscale) — sblocca sub-2+sub-3 in produzione (oggi senza questo il precheck skippa quasi tutto).
+2. sub-6 (IVA 22%) — completa la fiscalità base per P.IVA ordinarie.
+3. sub-2c (report F24/CU) — ora alimentato da `WithholdingAccrual`, dà al ristorante lo strumento operativo.
+4. sub-4 (DAC7) — compliance reporting annuale.
+5. sub-5 (refund) — ultimo perché i refund coinvolgono tutti gli altri flussi.
+6. Hardening live: HMAC SHA-256 in `lib/stripe-signature.js` + test mode Stripe reale (fuori roadmap MVP, prerequisito go-live).

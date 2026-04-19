@@ -119,6 +119,19 @@ La `Invoice` congela `taxRegimeSnapshot` al momento dell'emissione per coerenza 
 
 Smoke: `npm run smoke:payments` (43 check su 4 scenari).
 
+## Webhook handler (Sub-progetto 3)
+
+Processore asincrono per `StripeEvent`: consuma `status='pending'` → `processed`, con retry/DLQ in-tabella (zero queue esterne).
+
+- **Modulo**: `lib/webhook-processor.js`. Registry `handlers[eventType]` con 3 handler operativi (`invoice.paid`, `payment_intent.succeeded`, `withholding.reported`) + 6 noop (`payment_intent.created`, `invoice.created`, `invoice.finalized`, `transfer.created`, `account.created`, `customer.created`). Wrapper `processEvent` centralizza idempotenza: se `status='processed'` skip. Handler scritti idempotenti (updateMany con filtro sullo stato target, upsert).
+- **Retry**: `pending` → `failed` (retryCount++) → `dead` (a `retryCount >= maxRetries`, default 3). Event type sconosciuti vanno in `failed`/`dead` con `error` esplicito (niente silent skip).
+- **Aggregazione ritenuta**: handler `withholding.reported` fa upsert su `WithholdingAccrual` per `(restaurantProfileId, workerProfileId, periodYear, periodMonth, taxRegimeSnapshot)`. Somma `totalAmountEur`, incrementa `invoiceCount`, traccia `firstInvoiceAt`/`lastInvoiceAt`. Base dati per report F24 al ristorante (Sub-progetto 2c).
+- **Endpoint pubblico**: `POST /webhooks/stripe`. Bypass auth (montato PRIMA di `requireAuth` in `server.js`). Signature via `lib/stripe-signature`: stub mock permissivo, live lancia finché HMAC SHA-256 non implementato. Accetta payload minimalista `{ providerEventId }`, carica StripeEvent, chiama processEvent.
+- **Endpoint admin**: `POST /admin/webhooks/process-pending?limit=100` (batch pending+failed), `POST /admin/webhooks/retry-failed?limit=100` (solo failed), `GET /admin/webhooks/stats` (counts per status).
+- **Signature Stripe**: il mock usa nomi eventi reali (`payment_intent.succeeded`, non l'invenzione `.captured`). Quando si abilita `STRIPE_MODE=live` va implementato HMAC in `lib/stripe-signature.js` e configurato `STRIPE_WEBHOOK_SECRET`.
+
+Smoke: `npm run smoke:webhook` (17 check: batch, aggregation, replay-safety, retry cascade, DLQ).
+
 ## Conventions
 
 - Cookie jar files (`cookies-*.txt`) and per-port logs (`server-<port>.log`) are local dev artefacts — don't commit generated variants.
