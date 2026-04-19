@@ -7,6 +7,7 @@ const blueprint = require('../data/marketplace-blueprint');
 const marketplaceDemo = require('../data/marketplace-demo.json');
 const marketplace = require('../data/marketplace-service');
 const { getPrismaClient } = require('../lib/prisma');
+const { processPending, processPendingRetry } = require('../lib/webhook-processor');
 
 router.get('/dashboard', (req, res) => {
   const dashboard = marketplace.getAdminDashboard();
@@ -240,6 +241,44 @@ router.get('/legal-billing', async (req, res) => {
     restaurants: db.getRistoranti(),
     unreadCount: 0
   });
+});
+
+router.post('/webhooks/process-pending', async (req, res) => {
+  const prisma = getPrismaClient();
+  if (!prisma) return res.status(503).json({ error: 'prisma_unavailable' });
+  const limit = Math.min(1000, parseInt(req.query.limit || '100', 10) || 100);
+  try {
+    const result = await processPending(prisma, { limit });
+    res.json(result);
+  } catch (err) {
+    console.error('[admin/webhooks/process-pending]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/webhooks/retry-failed', async (req, res) => {
+  const prisma = getPrismaClient();
+  if (!prisma) return res.status(503).json({ error: 'prisma_unavailable' });
+  const limit = Math.min(1000, parseInt(req.query.limit || '100', 10) || 100);
+  try {
+    const result = await processPendingRetry(prisma, { limit });
+    res.json(result);
+  } catch (err) {
+    console.error('[admin/webhooks/retry-failed]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/webhooks/stats', async (req, res) => {
+  const prisma = getPrismaClient();
+  if (!prisma) return res.status(503).json({ error: 'prisma_unavailable' });
+  const [pending, processed, failed, dead] = await Promise.all([
+    prisma.stripeEvent.count({ where: { status: 'pending' } }),
+    prisma.stripeEvent.count({ where: { status: 'processed' } }),
+    prisma.stripeEvent.count({ where: { status: 'failed' } }),
+    prisma.stripeEvent.count({ where: { status: 'dead' } }),
+  ]);
+  res.json({ pending, processed, failed, dead });
 });
 
 module.exports = router;
