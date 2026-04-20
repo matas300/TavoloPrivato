@@ -1,0 +1,3 @@
+## 2023-10-27 - Localized ARIA labels for icon-only elements
+**Learning:** The application's interface is primarily in Italian, and standard accessibility attributes like ARIA labels for icon-only interactive elements must be localized appropriately (e.g. `aria-label="Invia messaggio"` instead of `"Send message"`) to support Italian screen reader users effectively.
+**Action:** When adding ARIA labels to components, ensure they are translated into Italian to match the surrounding interface language.
