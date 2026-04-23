@@ -334,7 +334,14 @@ function scoreWorkerToRestaurant(worker, restaurant) {
 
 function getOpenServiceRequestsForWorker(workerId, filters = {}) {
   const worker = getEnhancedWorker(workerId);
-  let items = db.annunci.filter(a => a.stato === 'aperto').map(annuncio => {
+
+  let baseAnnunci = db.annunci.filter(a => a.stato === 'aperto');
+
+  // Applica prima i filtri di base per evitare di migliorare annunci non necessari
+  if (filters.tipo) baseAnnunci = baseAnnunci.filter(a => a.tipo === filters.tipo);
+  if (filters.budget) baseAnnunci = baseAnnunci.filter(a => a.budget >= parseInt(filters.budget, 10));
+
+  let items = baseAnnunci.map(annuncio => {
     const normalizedAnnuncio = normalizeAnnuncio(annuncio);
     const restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
     const pkg = packageForRestaurantAndRequest(annuncio.ristoranteId, normalizedAnnuncio);
@@ -356,16 +363,26 @@ function getOpenServiceRequestsForWorker(workerId, filters = {}) {
     };
   });
 
+  // Filtra per zona ristorante (richiede che il ristorante sia stato ottenuto)
   if (filters.zona) items = items.filter(item => item.restaurant.zona === filters.zona);
-  if (filters.tipo) items = items.filter(item => item.tipo === filters.tipo);
-  if (filters.budget) items = items.filter(item => item.budget >= parseInt(filters.budget, 10));
 
   return items.sort((a, b) => b.matchScore - a.matchScore);
 }
 
 function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
   const restaurant = getEnhancedRestaurant(restaurantId);
-  let workers = db.getCamerieri().map(worker => {
+
+  let baseWorkers = db.getCamerieri();
+
+  // Applica prima i filtri di base per evitare di migliorare worker non necessari
+  if (filters.zona) baseWorkers = baseWorkers.filter(worker => worker.zona === filters.zona);
+  if (filters.esperienza) baseWorkers = baseWorkers.filter(worker => worker.esperienza >= parseInt(filters.esperienza, 10));
+  if (filters.budget) baseWorkers = baseWorkers.filter(worker => worker.pagaMin <= parseInt(filters.budget, 10));
+
+  // Nota: qualifica è complessa perché verifica anche hardSkills aggiunte da getEnhancedWorker,
+  // ma filter base su qualifiche di base può ottimizzare
+
+  let workers = baseWorkers.map(worker => {
     const profile = getEnhancedWorker(worker.id);
     const compliance = buildPairMetrics(worker.id, restaurantId);
     return {
@@ -377,10 +394,8 @@ function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
     };
   });
 
-  if (filters.zona) workers = workers.filter(worker => worker.zona === filters.zona);
+  // Riapplica il filtro qualifica dopo l'enhancement per includere hardSkills e qualifiche pulite
   if (filters.qualifica) workers = workers.filter(worker => worker.qualifiche.includes(filters.qualifica) || worker.hardSkills.includes(filters.qualifica));
-  if (filters.esperienza) workers = workers.filter(worker => worker.esperienza >= parseInt(filters.esperienza, 10));
-  if (filters.budget) workers = workers.filter(worker => worker.pagaMin <= parseInt(filters.budget, 10));
 
   return workers.sort((a, b) => b.matchScore - a.matchScore);
 }
