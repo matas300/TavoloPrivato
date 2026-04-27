@@ -1,0 +1,3 @@
+## 2024-04-27 - Icon-only Interactive Elements and Labelless Inputs
+**Learning:** Found an accessibility issue pattern where topbar icons (like menu and notifications) and chat input fields (which rely on placeholders instead of `<label>` tags) lack accessible names. Screen readers would not be able to identify these elements properly.
+**Action:** Always ensure that icon-only interactive elements and form inputs without explicit `<label>` tags include appropriate, translated `aria-label` attributes to support screen reader users.
