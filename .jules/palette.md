@@ -1,0 +1,3 @@
+## 2024-05-24 - Add ARIA labels to icon-only buttons
+**Learning:** Found several critical icon-only interactive elements (like the navigation menu toggle, notification bell, and message send buttons) lacking descriptive text, which severely hindered screen reader accessibility. Since this application heavily relies on Lucide icons (`<i data-lucide="...">`), icon-only buttons are a common pattern.
+**Action:** When implementing icon-only buttons or links, ensure they always have an explicit, translated `aria-label` attribute (e.g., "Apri menu navigazione"). Additionally, add `aria-hidden="true"` to the internal `<i data-lucide="...">` icons so screen readers do not attempt to announce redundant or confusing SVG/icon attributes.
