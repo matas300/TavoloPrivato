@@ -334,7 +334,15 @@ function scoreWorkerToRestaurant(worker, restaurant) {
 
 function getOpenServiceRequestsForWorker(workerId, filters = {}) {
   const worker = getEnhancedWorker(workerId);
-  let items = db.annunci.filter(a => a.stato === 'aperto').map(annuncio => {
+
+  // ⚡ Bolt Optimization: Filter raw base data before expensive enhancements
+  let baseAnnunci = db.annunci.filter(a => a.stato === 'aperto');
+  if (filters.budget) {
+    const budgetVal = parseInt(filters.budget, 10);
+    baseAnnunci = baseAnnunci.filter(a => a.budget >= budgetVal);
+  }
+
+  let items = baseAnnunci.map(annuncio => {
     const normalizedAnnuncio = normalizeAnnuncio(annuncio);
     const restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
     const pkg = packageForRestaurantAndRequest(annuncio.ristoranteId, normalizedAnnuncio);
@@ -358,14 +366,28 @@ function getOpenServiceRequestsForWorker(workerId, filters = {}) {
 
   if (filters.zona) items = items.filter(item => item.restaurant.zona === filters.zona);
   if (filters.tipo) items = items.filter(item => item.tipo === filters.tipo);
-  if (filters.budget) items = items.filter(item => item.budget >= parseInt(filters.budget, 10));
 
   return items.sort((a, b) => b.matchScore - a.matchScore);
 }
 
 function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
   const restaurant = getEnhancedRestaurant(restaurantId);
-  let workers = db.getCamerieri().map(worker => {
+
+  // ⚡ Bolt Optimization: Filter raw base data before expensive enhancements
+  let baseWorkers = db.getCamerieri();
+  if (filters.zona) {
+    baseWorkers = baseWorkers.filter(w => w.zona === filters.zona);
+  }
+  if (filters.esperienza) {
+    const expVal = parseInt(filters.esperienza, 10);
+    baseWorkers = baseWorkers.filter(w => w.esperienza >= expVal);
+  }
+  if (filters.budget) {
+    const budgetVal = parseInt(filters.budget, 10);
+    baseWorkers = baseWorkers.filter(w => w.pagaMin <= budgetVal);
+  }
+
+  let workers = baseWorkers.map(worker => {
     const profile = getEnhancedWorker(worker.id);
     const compliance = buildPairMetrics(worker.id, restaurantId);
     return {
@@ -377,10 +399,7 @@ function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
     };
   });
 
-  if (filters.zona) workers = workers.filter(worker => worker.zona === filters.zona);
   if (filters.qualifica) workers = workers.filter(worker => worker.qualifiche.includes(filters.qualifica) || worker.hardSkills.includes(filters.qualifica));
-  if (filters.esperienza) workers = workers.filter(worker => worker.esperienza >= parseInt(filters.esperienza, 10));
-  if (filters.budget) workers = workers.filter(worker => worker.pagaMin <= parseInt(filters.budget, 10));
 
   return workers.sort((a, b) => b.matchScore - a.matchScore);
 }
