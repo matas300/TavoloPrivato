@@ -1,0 +1,3 @@
+## 2026-05-04 - [Accessible Icon Buttons and Inputs]
+**Learning:** Found instances where icon-only buttons (like topbar menu/notifications, theme toggle, chat send button) lacked `aria-label` attributes and inner Lucide icons lacked `aria-hidden="true"`. Similarly, chat input fields lacked associated labels and didn't use `aria-label` as a fallback.
+**Action:** Always add an Italian `aria-label` to icon-only buttons or inputs lacking a `<label>`, and add `aria-hidden="true"` to the internal `<i data-lucide="...">` elements so screen readers announce the action properly without redundant icon readings.
