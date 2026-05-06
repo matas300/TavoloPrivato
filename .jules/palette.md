@@ -1,0 +1,3 @@
+## 2025-02-14 - Aria Label and Hidden on Lucide Icons
+**Learning:** Found multiple instances where the application uses `<i data-lucide="...">` purely for visual icons within interactive elements (e.g. `<button>` or `<a>`) that had insufficient context. Even if an icon has visual context for sighted users, it must have an explicit string context (e.g. `aria-label`) for screen readers. Furthermore, the icon itself must be explicitly hidden (`aria-hidden="true"`) to avoid duplicate/confusing screen reader announcements.
+**Action:** Always verify that buttons or links using Lucide icons solely for visual presentation have descriptive `aria-label`s and that their internal `<i data-lucide="...">` tags have `aria-hidden="true"`.
