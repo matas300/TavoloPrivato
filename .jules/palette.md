@@ -1,0 +1,3 @@
+## 2024-05-10 - Accessible Notifications Pattern
+**Learning:** In this application, components with dynamic text like notification badges use specific patterns for accessibility. Screen readers would redundantly read both the icon and the badge text or misread them depending on the markup structure.
+**Action:** When adding `aria-label` to containers with dynamic text (like notification badges with counts), interpolate the dynamic value directly into the `aria-label` (e.g., `aria-label="Notifiche, <%= count %> da leggere"`) and add `aria-hidden="true"` to the inner visual elements (icons and badges) to prevent screen readers from masking or redundantly announcing the content.
