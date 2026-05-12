@@ -1,0 +1,3 @@
+## 2024-05-12 - Topbar Accessibility Enhancement
+**Learning:** Adding `aria-label` to dynamically updated elements like notification badges ensures screen readers accurately convey the status. It's crucial to hide internal decorative elements and badge texts (`aria-hidden="true"`) to prevent redundant or confusing screen reader announcements.
+**Action:** When adding `aria-label` to containers with dynamic text (like notification badges with counts), interpolate the dynamic value directly into the `aria-label` (e.g., `aria-label="Notifiche, <%= count %> da leggere"`) and add `aria-hidden="true"` to the inner visual elements to prevent screen readers from masking or redundantly announcing the content.
