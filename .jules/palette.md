@@ -1,0 +1,3 @@
+## 2025-02-14 - Accessible Notification Badges
+**Learning:** Dynamic text containers like notification badges (with unread counts) can create confusing or redundant screen reader announcements if their internal elements are exposed along with a container-level ARIA label.
+**Action:** When adding `aria-label` to containers with dynamic text, interpolate the dynamic value directly into the container's `aria-label` (e.g., `aria-label="Notifiche, <%= count %> da leggere"`) and always add `aria-hidden="true"` to the inner visual elements (icons and badges) to prevent screen readers from masking or redundantly announcing the content.
