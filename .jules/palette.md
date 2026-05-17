@@ -1,0 +1,3 @@
+## 2026-05-17 - Accessible Icon Buttons with Dynamic ARIA
+**Learning:** When using Lucide icons inside interactive elements without visible text (like topbar toggles or notification bells with badge counts), screen readers may announce raw values or SVG tags poorly. Appending a dynamic string (like count interpolation) to the `aria-label` of the parent element and adding `aria-hidden="true"` to the internal child elements (icons and badges) provides a cleaner, single cohesive announcement.
+**Action:** When adding ARIA to notification/badge containers, interpolate dynamic text directly into the container's `aria-label` (e.g., 'Notifiche, X da leggere') and hide inner `<i>` or `<span>` elements from assistive tech.
