@@ -334,7 +334,25 @@ function scoreWorkerToRestaurant(worker, restaurant) {
 
 function getOpenServiceRequestsForWorker(workerId, filters = {}) {
   const worker = getEnhancedWorker(workerId);
-  let items = db.annunci.filter(a => a.stato === 'aperto').map(annuncio => {
+
+  // Optimize: Filter raw announcements before mapping to avoid expensive enhancements on items that will be filtered out.
+  let rawItems = db.annunci.filter(a => a.stato === 'aperto');
+
+  if (filters.zona) {
+    rawItems = rawItems.filter(a => {
+      const rest = db.getUser(a.ristoranteId);
+      return rest && rest.zona === filters.zona;
+    });
+  }
+  if (filters.tipo) {
+    rawItems = rawItems.filter(a => cleanText(a.tipo) === filters.tipo);
+  }
+  if (filters.budget) {
+    const minBudget = parseInt(filters.budget, 10);
+    rawItems = rawItems.filter(a => (a.budget || 0) >= minBudget);
+  }
+
+  let items = rawItems.map(annuncio => {
     const normalizedAnnuncio = normalizeAnnuncio(annuncio);
     const restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
     const pkg = packageForRestaurantAndRequest(annuncio.ristoranteId, normalizedAnnuncio);
@@ -356,16 +374,28 @@ function getOpenServiceRequestsForWorker(workerId, filters = {}) {
     };
   });
 
-  if (filters.zona) items = items.filter(item => item.restaurant.zona === filters.zona);
-  if (filters.tipo) items = items.filter(item => item.tipo === filters.tipo);
-  if (filters.budget) items = items.filter(item => item.budget >= parseInt(filters.budget, 10));
-
   return items.sort((a, b) => b.matchScore - a.matchScore);
 }
 
 function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
   const restaurant = getEnhancedRestaurant(restaurantId);
-  let workers = db.getCamerieri().map(worker => {
+
+  // Optimize: Filter raw workers before mapping to avoid expensive enhancements
+  let rawWorkers = db.getCamerieri();
+
+  if (filters.zona) {
+    rawWorkers = rawWorkers.filter(w => w.zona === filters.zona);
+  }
+  if (filters.esperienza) {
+    const minExp = parseInt(filters.esperienza, 10);
+    rawWorkers = rawWorkers.filter(w => (w.esperienza || 0) >= minExp);
+  }
+  if (filters.budget) {
+    const maxBudget = parseInt(filters.budget, 10);
+    rawWorkers = rawWorkers.filter(w => (w.pagaMin || 0) <= maxBudget);
+  }
+
+  let workers = rawWorkers.map(worker => {
     const profile = getEnhancedWorker(worker.id);
     const compliance = buildPairMetrics(worker.id, restaurantId);
     return {
@@ -377,10 +407,10 @@ function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
     };
   });
 
-  if (filters.zona) workers = workers.filter(worker => worker.zona === filters.zona);
-  if (filters.qualifica) workers = workers.filter(worker => worker.qualifiche.includes(filters.qualifica) || worker.hardSkills.includes(filters.qualifica));
-  if (filters.esperienza) workers = workers.filter(worker => worker.esperienza >= parseInt(filters.esperienza, 10));
-  if (filters.budget) workers = workers.filter(worker => worker.pagaMin <= parseInt(filters.budget, 10));
+  // Filter based on enhanced fields (qualifications are computed/cleaned in enhancement)
+  if (filters.qualifica) {
+    workers = workers.filter(worker => worker.qualifiche.includes(filters.qualifica) || worker.hardSkills.includes(filters.qualifica));
+  }
 
   return workers.sort((a, b) => b.matchScore - a.matchScore);
 }
