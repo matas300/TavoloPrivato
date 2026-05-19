@@ -8,3 +8,7 @@
 ## 2025-02-12 - `cleanText` optimization
 **Learning:** `cleanText` function used `reduce` with `split().join()` for a list of string replacements, doing an array operation for every string property accessed. `cleanText` is heavily used when enhancing/formatting workers and restaurants from the mock database, causing a significant slowdown on loops like `getWorkerMatchesForRestaurant` and `getOpenServiceRequestsForWorker`.
 **Action:** Replaced `split().join()` loop with a single Regex replacement, precompiling the regex and a lookup map. Improved execution time for large datasets by over 10x!
+
+## 2025-05-19 - Filter before mapping in marketplace-service.js
+**Learning:** `getWorkerMatchesForRestaurant` and `getOpenServiceRequestsForWorker` were filtering items *after* applying expensive enhancements (like `getEnhancedWorker`, `buildPairMetrics`, etc.) to the entire list of workers/announcements. This resulted in unnecessary processing for items that were eventually filtered out anyway.
+**Action:** Move filters that apply to raw fields (like `zona`, `budget`, `esperienza`) *before* the `.map()` operations to only enhance the items that actually match the filters. Leave filters for enhanced fields (like `qualifiche`) after the map. This avoids duplicating logic and provides a huge performance gain for large lists.
