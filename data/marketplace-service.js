@@ -334,7 +334,18 @@ function scoreWorkerToRestaurant(worker, restaurant) {
 
 function getOpenServiceRequestsForWorker(workerId, filters = {}) {
   const worker = getEnhancedWorker(workerId);
-  let items = db.annunci.filter(a => a.stato === 'aperto').map(annuncio => {
+  let baseAnnunci = db.annunci.filter(a => a.stato === 'aperto');
+
+  // ⚡ Bolt Optimization: Filter raw base data before expensive map enhancement
+  if (filters.tipo) baseAnnunci = baseAnnunci.filter(a => (a.tipo ? String(a.tipo).toLowerCase().trim() : '') === filters.tipo);
+  if (filters.budget) baseAnnunci = baseAnnunci.filter(a => (a.budget || 0) >= parseInt(filters.budget, 10));
+  if (filters.zona) baseAnnunci = baseAnnunci.filter(a => {
+    // Prefer db.getUser over getRestaurantBase to avoid ReferenceError
+    const r = db.getUser(a.ristoranteId);
+    return r && r.zona === filters.zona;
+  });
+
+  let items = baseAnnunci.map(annuncio => {
     const normalizedAnnuncio = normalizeAnnuncio(annuncio);
     const restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
     const pkg = packageForRestaurantAndRequest(annuncio.ristoranteId, normalizedAnnuncio);
@@ -356,16 +367,19 @@ function getOpenServiceRequestsForWorker(workerId, filters = {}) {
     };
   });
 
-  if (filters.zona) items = items.filter(item => item.restaurant.zona === filters.zona);
-  if (filters.tipo) items = items.filter(item => item.tipo === filters.tipo);
-  if (filters.budget) items = items.filter(item => item.budget >= parseInt(filters.budget, 10));
-
   return items.sort((a, b) => b.matchScore - a.matchScore);
 }
 
 function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
   const restaurant = getEnhancedRestaurant(restaurantId);
-  let workers = db.getCamerieri().map(worker => {
+  let baseWorkers = db.getCamerieri();
+
+  // ⚡ Bolt Optimization: Filter raw base data before expensive map enhancement
+  if (filters.zona) baseWorkers = baseWorkers.filter(w => w.zona === filters.zona);
+  if (filters.esperienza) baseWorkers = baseWorkers.filter(w => (w.esperienza || 0) >= parseInt(filters.esperienza, 10));
+  if (filters.budget) baseWorkers = baseWorkers.filter(w => (w.pagaMin || 0) <= parseInt(filters.budget, 10));
+
+  let workers = baseWorkers.map(worker => {
     const profile = getEnhancedWorker(worker.id);
     const compliance = buildPairMetrics(worker.id, restaurantId);
     return {
@@ -377,10 +391,8 @@ function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
     };
   });
 
-  if (filters.zona) workers = workers.filter(worker => worker.zona === filters.zona);
+  // Qualifica filter must run after enhancement as it depends on derived hardSkills
   if (filters.qualifica) workers = workers.filter(worker => worker.qualifiche.includes(filters.qualifica) || worker.hardSkills.includes(filters.qualifica));
-  if (filters.esperienza) workers = workers.filter(worker => worker.esperienza >= parseInt(filters.esperienza, 10));
-  if (filters.budget) workers = workers.filter(worker => worker.pagaMin <= parseInt(filters.budget, 10));
 
   return workers.sort((a, b) => b.matchScore - a.matchScore);
 }
