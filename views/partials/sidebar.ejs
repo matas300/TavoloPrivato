@@ -45,10 +45,10 @@ if (role === 'cameriere') {
   </div>
   <nav class="sidebar-nav">
     <% links.forEach(l => { %>
-      <a class="sidebar-link <%= path === l.href ? 'active' : '' %>" href="<%= l.href %>">
-        <i data-lucide="<%= l.icon %>"></i> <%= l.label %>
+      <a class="sidebar-link <%= path === l.href ? 'active' : '' %>" href="<%= l.href %>" aria-label="<%= l.label %><% if (l.label === 'Messaggi' && typeof unreadCount !== 'undefined' && unreadCount > 0) { %>, <%= unreadCount %> da leggere<% } %>">
+        <i data-lucide="<%= l.icon %>" aria-hidden="true"></i> <span aria-hidden="true"><%= l.label %></span>
         <% if (l.label === 'Messaggi' && typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
-          <span class="badge-count" style="margin-left:auto"><%= unreadCount %></span>
+          <span class="badge-count" style="margin-left:auto" aria-hidden="true"><%= unreadCount %></span>
         <% } %>
       </a>
     <% }) %>
