@@ -1,0 +1,3 @@
+## 2024-05-25 - [Filter optimization before expensive map operations]
+**Learning:** In heavily mapped base models like `data/marketplace-service.js`, the performance bottleneck often occurs because large arrays (like db entries) are looped and augmented via `.map()` operations that involve other helper functions (e.g., `getEnhancedWorker` and `buildPairMetrics`).
+**Action:** When filtering base models based on their raw properties (like `zona`, `esperienza`, `budget`), always apply these base array filters *before* augmenting them with expensive `.map()` calls. However, leave filters reliant on augmented derived attributes (such as `qualifica` relying on `hardSkills`) *after* the `.map()`.
