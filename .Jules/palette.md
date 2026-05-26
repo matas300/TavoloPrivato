@@ -1,3 +1,7 @@
 ## 2026-03-05 - Form and Interactive Card Accessibility
 **Learning:** In TavoloLibero, interactive UI elements meant to be selected by users (like the role selection cards on the registration page) were built using `div` tags with `onclick` handlers, but lacked keyboard accessibility attributes like `tabindex`, `role="button"`, `aria-pressed`, and `onkeydown` for users navigating without a mouse. In addition, standard form inputs lacked proper `id` attributes that link to their corresponding `<label for="...">` elements, reducing click targets and screen reader accessibility.
 **Action:** When creating or modifying custom interactive elements (like cards that act as selectors), always include `tabindex="0"`, `role="button"`, and appropriate `aria` attributes, plus an `onkeydown` handler to simulate clicks via `Enter` or `Space`. For standard forms, always ensure labels use the `for` attribute referencing the `id` of their target input.
+
+## 2026-05-26 - Prevent Redundant Announcements for Dynamic Attributes
+**Learning:** When using container elements (like a notification bell link) that contain dynamic text (like an unread count badge), screen readers may read both the dynamic label and the internal elements.
+**Action:** When adding `aria-label` to containers with dynamic text, interpolate the dynamic value directly into the `aria-label` (e.g., `aria-label="Notifiche, <%= count %> da leggere"`) and add `aria-hidden="true"` to all inner visual elements to prevent screen readers from redundantly announcing the content.
