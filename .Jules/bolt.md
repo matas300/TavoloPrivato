@@ -1,0 +1,3 @@
+## 2024-05-26 - Optimize array processing in marketplace-service.js
+**Learning:** Chaining `.map()` and `.filter()` can lead to redundant data normalization and unnecessary execution of expensive operations on items that would eventually be filtered out anyway.
+**Action:** Replace `.filter().map()` chains with a single `for...of` loop or `.reduce()`. Apply fast base filters (like simple equality checks on un-enhanced data) before calling expensive enhancement functions (like `getEnhancedRestaurant`, `buildPairMetrics`). This avoids processing data that gets discarded and improves performance measurably.
