@@ -8,3 +8,7 @@
 ## 2025-02-12 - `cleanText` optimization
 **Learning:** `cleanText` function used `reduce` with `split().join()` for a list of string replacements, doing an array operation for every string property accessed. `cleanText` is heavily used when enhancing/formatting workers and restaurants from the mock database, causing a significant slowdown on loops like `getWorkerMatchesForRestaurant` and `getOpenServiceRequestsForWorker`.
 **Action:** Replaced `split().join()` loop with a single Regex replacement, precompiling the regex and a lookup map. Improved execution time for large datasets by over 10x!
+
+## 2025-02-12 - Marketplace lists loops optimizations
+**Learning:** `getOpenServiceRequestsForWorker` and `getWorkerMatchesForRestaurant` were looping over large data arrays (like annunci and workers), enhancing every single item (with multiple cross-service lookups and normalizations) before filtering them down using chained `.map()` and `.filter()`. This caused a massive performance degradation as database size grew.
+**Action:** Replaced chained array methods with a single `for...of` loop per function, pushing filters directly up. Filter basic primitives first, and only call expensive enhancer functions like `normalizeAnnuncio`, `getEnhancedRestaurant`, and `buildPairMetrics` on entries that survive the base filtering.
