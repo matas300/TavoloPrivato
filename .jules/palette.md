@@ -1,0 +1,3 @@
+## 2024-05-29 - [Accessibility] Dynamic ARIA labels for icon badges
+**Learning:** When UI elements like notification bells include dynamic text such as badges, screen readers may miss the context or announce visual inner elements redundantly. Setting dynamic ARIA labels on the parent container (e.g., `aria-label="Notifiche, 3 da leggere"`) and using `aria-hidden="true"` on the internal icon and badge components provides a cleaner experience for assistive technologies.
+**Action:** Always interpolate dynamic counts or text directly into the parent's `aria-label` and apply `aria-hidden="true"` to inner visual-only `<i data-lucide="...">` tags and child text span elements to prevent screen readers from reading raw UI structures.
