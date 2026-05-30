@@ -1,0 +1,3 @@
+## 2024-05-30 - Topbar Icon ARIA Labels
+**Learning:** Icon-only buttons or links lacking associated `<label>` attributes cause missing info for screen readers. Further, nested visual text like notification counts should be embedded within `aria-label` while `aria-hidden` is applied to inner SVG or span badges, so screen readers don't announce redundant or confusing data.
+**Action:** When adding `aria-label` to containers with dynamic text (like notification badges with counts), interpolate the dynamic value directly into the `aria-label` (e.g., `aria-label="Notifiche, <%= count %> da leggere"`) and add `aria-hidden="true"` to the inner visual elements to prevent screen readers from masking or redundantly announcing the content.
