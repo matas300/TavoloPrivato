@@ -8,3 +8,6 @@
 ## 2025-02-12 - `cleanText` optimization
 **Learning:** `cleanText` function used `reduce` with `split().join()` for a list of string replacements, doing an array operation for every string property accessed. `cleanText` is heavily used when enhancing/formatting workers and restaurants from the mock database, causing a significant slowdown on loops like `getWorkerMatchesForRestaurant` and `getOpenServiceRequestsForWorker`.
 **Action:** Replaced `split().join()` loop with a single Regex replacement, precompiling the regex and a lookup map. Improved execution time for large datasets by over 10x!
+## 2025-02-12 - Marketplace Matching Optimization
+**Learning:** `data/marketplace-service.js` used a highly inefficient map-then-filter pattern for matching workers to restaurants. It was performing expensive operations like `buildPairMetrics` and `scoreWorkerToRequest` on the entire dataset *before* filtering by budget, zone, or skills.
+**Action:** Replace chained `.filter().map()` pipelines with a single `for...of` loop where basic filters are applied immediately after simple normalization. Only if an item passes the fast filters do we execute the heavy data enrichment functions and push it to the results array. This significantly reduced execution time.
