@@ -221,7 +221,7 @@
 
 <script>
   window.TL_LONG_CONTRACT_PAGE = {
-    workerOptions: <%- JSON.stringify(workerOptions) %>
+    workerOptions: <%- (JSON.stringify(workerOptions) || 'null').replace(/</g, '\u003c').replace(/>/g, '\u003e') %>
   };
 </script>
 <script src="/js/long-contract-page.js"></script>
