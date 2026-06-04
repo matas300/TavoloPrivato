@@ -1,0 +1,3 @@
+## 2025-02-05 - Add ARIA attributes to topbar dynamic icons
+**Learning:** When using dynamic badges for unread counts, interpolating the dynamic count directly into the `aria-label` attribute on the container link (e.g. `aria-label="Notifiche, <%= count %> da leggere"`) and hiding the inner visual icons with `aria-hidden="true"` makes it much clearer to screen reader users than having separate unlabelled icon/badge elements.
+**Action:** Always wrap dynamic notifications and icon buttons with an explicit `aria-label` translated properly, and apply `aria-hidden="true"` to visual SVG/icon elements to prevent redundant announcements.
