@@ -8,3 +8,6 @@
 ## 2025-02-12 - `cleanText` optimization
 **Learning:** `cleanText` function used `reduce` with `split().join()` for a list of string replacements, doing an array operation for every string property accessed. `cleanText` is heavily used when enhancing/formatting workers and restaurants from the mock database, causing a significant slowdown on loops like `getWorkerMatchesForRestaurant` and `getOpenServiceRequestsForWorker`.
 **Action:** Replaced `split().join()` loop with a single Regex replacement, precompiling the regex and a lookup map. Improved execution time for large datasets by over 10x!
+## 2024-05-18 - Avoid Heavy Normalization Before Filtering
+**Learning:** Chaining `.map()` for heavy data normalization followed by `.filter()` creates a massive performance bottleneck because expensive operations (like `getEnhancedRestaurant`, `buildPairMetrics`) are performed on items that will be immediately discarded.
+**Action:** Use `.reduce()` or a standard loop to apply cheap filters early and only normalize data for items that pass the filters.
