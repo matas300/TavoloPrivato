@@ -1,0 +1,3 @@
+## 2024-06-10 - Dynamic ARIA labels on badge containers
+**Learning:** When using notification bell icons with dynamic badge counters in EJS, adding an `aria-label` to the wrapper link requires dynamically interpolating the count into the label string, and simultaneously setting `aria-hidden="true"` on both the inner SVG and the visual badge span to prevent screen readers from reading duplicate or confusing text.
+**Action:** Whenever a visual element contains dynamic data but lacks intrinsic semantic text, interpolate that dynamic data directly into a parent's `aria-label` and hide the visual children from the accessibility tree.
