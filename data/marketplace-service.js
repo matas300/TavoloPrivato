@@ -334,14 +334,27 @@ function scoreWorkerToRestaurant(worker, restaurant) {
 
 function getOpenServiceRequestsForWorker(workerId, filters = {}) {
   const worker = getEnhancedWorker(workerId);
-  let items = db.annunci.filter(a => a.stato === 'aperto').map(annuncio => {
+  const items = [];
+
+  for (const annuncio of db.annunci) {
+    if (annuncio.stato !== 'aperto') continue;
+
     const normalizedAnnuncio = normalizeAnnuncio(annuncio);
+
+    // ⚡ Bolt Optimization: Evaluate base filters early to prevent
+    // running expensive enhancement functions on items that will be discarded.
+    if (filters.tipo && normalizedAnnuncio.tipo !== filters.tipo) continue;
+    if (filters.budget && normalizedAnnuncio.budget < parseInt(filters.budget, 10)) continue;
+
     const restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
+    if (filters.zona && restaurant.zona !== filters.zona) continue;
+
     const pkg = packageForRestaurantAndRequest(annuncio.ristoranteId, normalizedAnnuncio);
     const compliance = buildPairMetrics(workerId, annuncio.ristoranteId);
     const score = scoreWorkerToRequest(worker, normalizedAnnuncio, pkg);
     const commission = computeCommission(normalizedAnnuncio.tipo);
-    return {
+
+    items.push({
       ...normalizedAnnuncio,
       restaurant,
       package: pkg,
@@ -353,12 +366,8 @@ function getOpenServiceRequestsForWorker(workerId, filters = {}) {
       legalNote: compliance.decision === 'allow'
         ? 'Match proponibile come prestazione a giornata.'
         : 'Match visibile ma soggetto a controllo di concentrazione.'
-    };
-  });
-
-  if (filters.zona) items = items.filter(item => item.restaurant.zona === filters.zona);
-  if (filters.tipo) items = items.filter(item => item.tipo === filters.tipo);
-  if (filters.budget) items = items.filter(item => item.budget >= parseInt(filters.budget, 10));
+    });
+  }
 
   return items.sort((a, b) => b.matchScore - a.matchScore);
 }
