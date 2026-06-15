@@ -1,0 +1,3 @@
+## 2026-06-15 - Dynamic ARIA labels for notification badges
+**Learning:** When adding `aria-label` to containers with dynamic text like notification badges with counts, interpolate the dynamic value directly into the `aria-label` attribute (e.g., `aria-label="Notifiche<%= count > 0 ? `, ${count} da leggere` : '' %>"`) and add `aria-hidden="true"` to the inner visual elements (icon and badge) to prevent screen readers from masking or redundantly announcing the content.
+**Action:** Always verify if an element contains dynamic text before writing hardcoded ARIA labels, and explicitly hide inner decorative/redundant elements with `aria-hidden="true"`.
