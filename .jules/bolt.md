@@ -8,3 +8,6 @@
 ## 2025-02-12 - `cleanText` optimization
 **Learning:** `cleanText` function used `reduce` with `split().join()` for a list of string replacements, doing an array operation for every string property accessed. `cleanText` is heavily used when enhancing/formatting workers and restaurants from the mock database, causing a significant slowdown on loops like `getWorkerMatchesForRestaurant` and `getOpenServiceRequestsForWorker`.
 **Action:** Replaced `split().join()` loop with a single Regex replacement, precompiling the regex and a lookup map. Improved execution time for large datasets by over 10x!
+## 2024-05-19 - Filter data before aggregating in marketplace service
+**Learning:** In Javascript mapping operations, chaining `.map` then `.filter` when dealing with data sets and doing heavy normalization inside the mapping causes processing delays. Applying early returns skips processing for large un-needed datasets.
+**Action:** Apply base filters in a `for...of` loop or `.reduce()` before doing property aggregation like `getEnhancedRestaurant`.
