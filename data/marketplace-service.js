@@ -333,15 +333,27 @@ function scoreWorkerToRestaurant(worker, restaurant) {
 }
 
 function getOpenServiceRequestsForWorker(workerId, filters = {}) {
+  // ⚡ Bolt: Use a single loop to filter before expensive ops like buildPairMetrics
   const worker = getEnhancedWorker(workerId);
-  let items = db.annunci.filter(a => a.stato === 'aperto').map(annuncio => {
+  const items = [];
+  const filterBudget = filters.budget ? parseInt(filters.budget, 10) : null;
+
+  for (const annuncio of db.annunci) {
+    if (annuncio.stato !== 'aperto') continue;
+
     const normalizedAnnuncio = normalizeAnnuncio(annuncio);
+    if (filters.tipo && normalizedAnnuncio.tipo !== filters.tipo) continue;
+    if (filterBudget !== null && !(normalizedAnnuncio.budget >= filterBudget)) continue;
+
     const restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
+    if (filters.zona && restaurant.zona !== filters.zona) continue;
+
     const pkg = packageForRestaurantAndRequest(annuncio.ristoranteId, normalizedAnnuncio);
     const compliance = buildPairMetrics(workerId, annuncio.ristoranteId);
     const score = scoreWorkerToRequest(worker, normalizedAnnuncio, pkg);
     const commission = computeCommission(normalizedAnnuncio.tipo);
-    return {
+
+    items.push({
       ...normalizedAnnuncio,
       restaurant,
       package: pkg,
@@ -353,34 +365,37 @@ function getOpenServiceRequestsForWorker(workerId, filters = {}) {
       legalNote: compliance.decision === 'allow'
         ? 'Match proponibile come prestazione a giornata.'
         : 'Match visibile ma soggetto a controllo di concentrazione.'
-    };
-  });
-
-  if (filters.zona) items = items.filter(item => item.restaurant.zona === filters.zona);
-  if (filters.tipo) items = items.filter(item => item.tipo === filters.tipo);
-  if (filters.budget) items = items.filter(item => item.budget >= parseInt(filters.budget, 10));
+    });
+  }
 
   return items.sort((a, b) => b.matchScore - a.matchScore);
 }
 
 function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
+  // ⚡ Bolt: Use a single loop to filter before expensive ops like buildPairMetrics
   const restaurant = getEnhancedRestaurant(restaurantId);
-  let workers = db.getCamerieri().map(worker => {
+  const workers = [];
+  const filterBudget = filters.budget ? parseInt(filters.budget, 10) : null;
+  const filterEsperienza = filters.esperienza ? parseInt(filters.esperienza, 10) : null;
+
+  for (const worker of db.getCamerieri()) {
     const profile = getEnhancedWorker(worker.id);
+
+    if (filters.zona && profile.zona !== filters.zona) continue;
+    if (filters.qualifica && !profile.qualifiche.includes(filters.qualifica) && !profile.hardSkills.includes(filters.qualifica)) continue;
+    if (filterEsperienza !== null && !(profile.esperienza >= filterEsperienza)) continue;
+    if (filterBudget !== null && !(profile.pagaMin <= filterBudget)) continue;
+
     const compliance = buildPairMetrics(worker.id, restaurantId);
-    return {
+
+    workers.push({
       ...profile,
       compliance,
       complianceUi: decisionUi(compliance.decision),
       matchScore: scoreWorkerToRestaurant(profile, restaurant),
       bestPackage: restaurant.servicePackages.find(pkg => pkg.requiredSkills.some(skill => profile.qualifiche.includes(skill) || profile.hardSkills.includes(skill))) || restaurant.servicePackages[0]
-    };
-  });
-
-  if (filters.zona) workers = workers.filter(worker => worker.zona === filters.zona);
-  if (filters.qualifica) workers = workers.filter(worker => worker.qualifiche.includes(filters.qualifica) || worker.hardSkills.includes(filters.qualifica));
-  if (filters.esperienza) workers = workers.filter(worker => worker.esperienza >= parseInt(filters.esperienza, 10));
-  if (filters.budget) workers = workers.filter(worker => worker.pagaMin <= parseInt(filters.budget, 10));
+    });
+  }
 
   return workers.sort((a, b) => b.matchScore - a.matchScore);
 }
