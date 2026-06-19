@@ -1,3 +1,13 @@
+
+function escapeHtml(value) {
+  if (value == null) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 (function () {
   const form = document.getElementById('earnings-simulator-form');
   if (!form) return;
@@ -115,30 +125,32 @@
     if (!savedScenarios.length) {
       grid.innerHTML = `
         <div class="sim-empty-state" id="sim-empty-state">
-          <strong>${page.savedEmptyTitle || 'Nessuno scenario salvato'}</strong>
-          <p class="text-sm text-muted">${page.savedEmptyText || ''}</p>
+          <strong>${escapeHtml(page.savedEmptyTitle || 'Nessuno scenario salvato')}</strong>
+          <p class="text-sm text-muted">${escapeHtml(page.savedEmptyText || '')}</p>
         </div>
       `;
       return;
     }
 
     grid.innerHTML = savedScenarios.map(item => `
+
       <button
         type="button"
         class="sim-saved-card"
-        data-scenario-role="${item.snapshot.input.ruolo}"
+        data-scenario-role="${escapeHtml(item.snapshot.input.ruolo)}"
         data-scenario-years="${item.snapshot.input.anniEsperienza}"
         data-scenario-net="${item.snapshot.input.stipendioNettoMensileAttuale}"
         data-scenario-rate="${item.snapshot.input.aliquotaForfettario}"
       >
         <span class="sim-saved-date">${new Intl.DateTimeFormat('it-IT').format(new Date(item.createdAt))}</span>
-        <strong>${item.snapshot.input.ruoloLabel} · ${item.snapshot.input.seniorityLabel}</strong>
+        <strong>${escapeHtml(item.snapshot.input.ruoloLabel)} · ${escapeHtml(item.snapshot.input.seniorityLabel)}</strong>
         <p class="text-sm text-muted">Netto attuale ${currencyFormatter.format(item.snapshot.input.stipendioNettoMensileAttuale)} EUR/mese</p>
         <div class="sim-saved-metrics">
           <span>${currencyFormatter.format(item.companyCostAnnual)} EUR costo azienda</span>
           <span>${item.annualGain >= 0 ? '+' : '-'}${currencyFormatter.format(Math.abs(item.annualGain))} EUR annui</span>
         </div>
       </button>
+
     `).join('');
   }
 
