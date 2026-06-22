@@ -122,6 +122,15 @@
       return;
     }
 
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     grid.innerHTML = savedScenarios.map(item => `
       <button
         type="button"
@@ -132,7 +141,7 @@
         data-scenario-rate="${item.snapshot.input.aliquotaForfettario}"
       >
         <span class="sim-saved-date">${new Intl.DateTimeFormat('it-IT').format(new Date(item.createdAt))}</span>
-        <strong>${item.snapshot.input.ruoloLabel} · ${item.snapshot.input.seniorityLabel}</strong>
+        <strong>${escapeHtml(item.snapshot.input.ruoloLabel)} · ${escapeHtml(item.snapshot.input.seniorityLabel)}</strong>
         <p class="text-sm text-muted">Netto attuale ${currencyFormatter.format(item.snapshot.input.stipendioNettoMensileAttuale)} EUR/mese</p>
         <div class="sim-saved-metrics">
           <span>${currencyFormatter.format(item.companyCostAnnual)} EUR costo azienda</span>
