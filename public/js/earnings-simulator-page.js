@@ -14,6 +14,13 @@
   let requestToken = 0;
   let lastResult = initialState;
 
+  function escapeHtml(value) {
+    if (typeof value !== 'string') return value;
+    return value.replace(/[&<>"']/g, function (m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+    });
+  }
+
   function formatCurrency(value) {
     return `EUR ${currencyFormatter.format(Number(value || 0))}`;
   }
@@ -115,8 +122,8 @@
     if (!savedScenarios.length) {
       grid.innerHTML = `
         <div class="sim-empty-state" id="sim-empty-state">
-          <strong>${page.savedEmptyTitle || 'Nessuno scenario salvato'}</strong>
-          <p class="text-sm text-muted">${page.savedEmptyText || ''}</p>
+          <strong>${escapeHtml(page.savedEmptyTitle || 'Nessuno scenario salvato')}</strong>
+          <p class="text-sm text-muted">${escapeHtml(page.savedEmptyText || '')}</p>
         </div>
       `;
       return;
@@ -132,7 +139,7 @@
         data-scenario-rate="${item.snapshot.input.aliquotaForfettario}"
       >
         <span class="sim-saved-date">${new Intl.DateTimeFormat('it-IT').format(new Date(item.createdAt))}</span>
-        <strong>${item.snapshot.input.ruoloLabel} · ${item.snapshot.input.seniorityLabel}</strong>
+        <strong>${escapeHtml(item.snapshot.input.ruoloLabel)} · ${escapeHtml(item.snapshot.input.seniorityLabel)}</strong>
         <p class="text-sm text-muted">Netto attuale ${currencyFormatter.format(item.snapshot.input.stipendioNettoMensileAttuale)} EUR/mese</p>
         <div class="sim-saved-metrics">
           <span>${currencyFormatter.format(item.companyCostAnnual)} EUR costo azienda</span>
