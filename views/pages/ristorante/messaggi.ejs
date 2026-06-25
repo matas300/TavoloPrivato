@@ -41,7 +41,7 @@
             <div class="chat-input-area">
               <form class="flex gap-sm" onsubmit="sendMessage(event, <%= partner.id %>)">
                 <input class="form-input" placeholder="Scrivi un messaggio..." id="msg-input" autocomplete="off">
-                <button type="submit" class="btn btn-primary"><i data-lucide="send" style="width:16px;height:16px"></i></button>
+                <button type="submit" class="btn btn-primary" aria-label="Invia messaggio"><i data-lucide="send" style="width:16px;height:16px"></i></button>
               </form>
             </div>
           <% } else { %>
