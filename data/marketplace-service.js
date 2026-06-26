@@ -365,22 +365,29 @@ function getOpenServiceRequestsForWorker(workerId, filters = {}) {
 
 function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
   const restaurant = getEnhancedRestaurant(restaurantId);
-  let workers = db.getCamerieri().map(worker => {
-    const profile = getEnhancedWorker(worker.id);
-    const compliance = buildPairMetrics(worker.id, restaurantId);
-    return {
+  const workers = [];
+
+  for (const baseWorker of db.getCamerieri()) {
+    // ⚡ Bolt Optimization: Apply filters before expensive operations like getEnhancedWorker and buildPairMetrics
+    if (filters.zona && baseWorker.zona !== filters.zona) continue;
+    if (filters.esperienza && baseWorker.esperienza < parseInt(filters.esperienza, 10)) continue;
+    if (filters.budget && baseWorker.pagaMin > parseInt(filters.budget, 10)) continue;
+
+    const profile = getEnhancedWorker(baseWorker.id);
+
+    // Apply qualifica filter which requires enhanced profile check
+    if (filters.qualifica && !profile.qualifiche.includes(filters.qualifica) && !profile.hardSkills.includes(filters.qualifica)) continue;
+
+    const compliance = buildPairMetrics(baseWorker.id, restaurantId);
+
+    workers.push({
       ...profile,
       compliance,
       complianceUi: decisionUi(compliance.decision),
       matchScore: scoreWorkerToRestaurant(profile, restaurant),
       bestPackage: restaurant.servicePackages.find(pkg => pkg.requiredSkills.some(skill => profile.qualifiche.includes(skill) || profile.hardSkills.includes(skill))) || restaurant.servicePackages[0]
-    };
-  });
-
-  if (filters.zona) workers = workers.filter(worker => worker.zona === filters.zona);
-  if (filters.qualifica) workers = workers.filter(worker => worker.qualifiche.includes(filters.qualifica) || worker.hardSkills.includes(filters.qualifica));
-  if (filters.esperienza) workers = workers.filter(worker => worker.esperienza >= parseInt(filters.esperienza, 10));
-  if (filters.budget) workers = workers.filter(worker => worker.pagaMin <= parseInt(filters.budget, 10));
+    });
+  }
 
   return workers.sort((a, b) => b.matchScore - a.matchScore);
 }
