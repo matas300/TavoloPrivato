@@ -1,0 +1,3 @@
+## 2026-06-26 - Enhanced Focus Visibility and Screen Reader Accessibility
+**Learning:** Found multiple icon-only buttons lacking `aria-label`s, causing poor screen reader accessibility. Also, standard button elements and interactive `.card-hover` elements lacked `:focus-visible` styles, making keyboard navigation difficult for users relying on visual focus indicators.
+**Action:** Added `aria-label` attributes to icon-only buttons across views (sidebar, topbar, login, messaggi). Updated CSS to include strong `:focus-visible` outlines for `.btn`, `.btn-icon`, `button`, `a`, and interactive `.card-hover` elements to ensure keyboard users have clear visual cues when navigating.

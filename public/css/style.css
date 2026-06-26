@@ -156,6 +156,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 @media(max-width:600px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.mob-hide{display:none!important}}
 
 /* ═══ BUTTONS ═══ */
+.btn:focus-visible, .btn-icon:focus-visible, a:focus-visible, button:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 2px; }
 .btn{display:inline-flex;align-items:center;gap:var(--space-sm);padding:0.65em 1.4em;border:none;border-radius:var(--radius-md);font-family:var(--font-body);font-size:var(--fs-body);font-weight:600;cursor:pointer;transition:all var(--dur-norm) var(--ease-out);line-height:1.4;white-space:nowrap}
 .btn-primary{background:var(--terracotta);color:#fff;box-shadow:0 2px 8px rgba(194,91,42,0.3)}
 .btn-primary:hover{background:var(--terracotta-dark);box-shadow:0 4px 16px rgba(194,91,42,0.4);transform:translateY(-1px)}
@@ -198,6 +199,7 @@ textarea.form-input{resize:vertical;min-height:80px}
 /* ═══ CARD ═══ */
 .card{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);transition:all var(--dur-norm) var(--ease-out)}
 .card-hover:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.card-hover:focus-visible{outline:2px solid var(--terracotta);outline-offset:2px}
 .card-body{padding:var(--space-lg)}
 .card-flat{box-shadow:none;border:none}
 
