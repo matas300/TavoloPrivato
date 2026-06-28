@@ -253,11 +253,11 @@ function normalizeAnnuncio(annuncio) {
   };
 }
 
-function buildPairMetrics(workerId, restaurantId) {
+function buildPairMetrics(workerId, restaurantId, preloadedWorker = null, precomputedContracts = null) {
   const key = `${workerId}:${restaurantId}`;
   const override = pairOverrides[key];
-  const contracts = db.contratti.filter(c => c.cameriereId === workerId && c.ristoranteId === restaurantId);
-  const worker = getEnhancedWorker(workerId);
+  const contracts = precomputedContracts || db.contratti.filter(c => c.cameriereId === workerId && c.ristoranteId === restaurantId);
+  const worker = preloadedWorker || getEnhancedWorker(workerId);
   const pairGross = contracts.reduce((sum, c) => sum + c.compensoCam, 0);
   const derivedShare = worker.fiscalGrossYtdEur ? pairGross / worker.fiscalGrossYtdEur : 0;
 
@@ -334,11 +334,21 @@ function scoreWorkerToRestaurant(worker, restaurant) {
 
 function getOpenServiceRequestsForWorker(workerId, filters = {}) {
   const worker = getEnhancedWorker(workerId);
+
+  // ⚡ Bolt Optimization: Pre-group contracts by restaurant ID in O(N) to avoid O(N^2) nested filtering in buildPairMetrics
+  const workerContracts = db.getContrattiForUser(workerId, 'cameriere');
+  const contractsByRestaurant = {};
+  for (const c of workerContracts) {
+    if (!contractsByRestaurant[c.ristoranteId]) contractsByRestaurant[c.ristoranteId] = [];
+    contractsByRestaurant[c.ristoranteId].push(c);
+  }
+
   let items = db.annunci.filter(a => a.stato === 'aperto').map(annuncio => {
     const normalizedAnnuncio = normalizeAnnuncio(annuncio);
     const restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
     const pkg = packageForRestaurantAndRequest(annuncio.ristoranteId, normalizedAnnuncio);
-    const compliance = buildPairMetrics(workerId, annuncio.ristoranteId);
+    const pairContracts = contractsByRestaurant[annuncio.ristoranteId] || [];
+    const compliance = buildPairMetrics(workerId, annuncio.ristoranteId, worker, pairContracts);
     const score = scoreWorkerToRequest(worker, normalizedAnnuncio, pkg);
     const commission = computeCommission(normalizedAnnuncio.tipo);
     return {
@@ -365,9 +375,19 @@ function getOpenServiceRequestsForWorker(workerId, filters = {}) {
 
 function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
   const restaurant = getEnhancedRestaurant(restaurantId);
+
+  // ⚡ Bolt Optimization: Pre-group contracts by worker ID in O(N) to avoid O(N^2) nested filtering in buildPairMetrics
+  const restaurantContracts = db.getContrattiForUser(restaurantId, 'ristorante');
+  const contractsByWorker = {};
+  for (const c of restaurantContracts) {
+    if (!contractsByWorker[c.cameriereId]) contractsByWorker[c.cameriereId] = [];
+    contractsByWorker[c.cameriereId].push(c);
+  }
+
   let workers = db.getCamerieri().map(worker => {
     const profile = getEnhancedWorker(worker.id);
-    const compliance = buildPairMetrics(worker.id, restaurantId);
+    const workerContracts = contractsByWorker[worker.id] || [];
+    const compliance = buildPairMetrics(worker.id, restaurantId, profile, workerContracts);
     return {
       ...profile,
       compliance,
@@ -437,17 +457,30 @@ function getWorkerDashboard(workerId) {
 
 function getRestaurantDashboard(restaurantId) {
   const profile = getEnhancedRestaurant(restaurantId);
+
+  // ⚡ Bolt Optimization: Pre-group contracts to avoid O(N^2) nested filtering in buildPairMetrics
   const contratti = db.getContrattiForUser(restaurantId, 'ristorante');
-  const upcoming = contratti.filter(c => c.stato === 'confermato').map(c => ({
-    ...c,
-    worker: getEnhancedWorker(c.cameriereId),
-    compliance: buildPairMetrics(c.cameriereId, restaurantId)
-  }));
+  const contractsByWorker = {};
+  for (const c of contratti) {
+    if (!contractsByWorker[c.cameriereId]) contractsByWorker[c.cameriereId] = [];
+    contractsByWorker[c.cameriereId].push(c);
+  }
+
+  const upcoming = contratti.filter(c => c.stato === 'confermato').map(c => {
+    const worker = getEnhancedWorker(c.cameriereId);
+    const workerContracts = contractsByWorker[c.cameriereId] || [];
+    return {
+      ...c,
+      worker,
+      compliance: buildPairMetrics(c.cameriereId, restaurantId, worker, workerContracts)
+    };
+  });
   const completed = contratti.filter(c => ['pagato', 'completato'].includes(c.stato));
   const monthSpend = completed.reduce((sum, c) => sum + c.compensoCam + c.commissione, 0);
   const roster = [...new Set(contratti.map(c => c.cameriereId))].map(workerId => {
     const worker = getEnhancedWorker(workerId);
-    const metrics = buildPairMetrics(workerId, restaurantId);
+    const workerContracts = contractsByWorker[workerId] || [];
+    const metrics = buildPairMetrics(workerId, restaurantId, worker, workerContracts);
     return {
       ...worker,
       turniCount: contratti.filter(c => c.cameriereId === workerId).length,
@@ -474,7 +507,8 @@ function getContractView(contractId) {
   const cameriere = getEnhancedWorker(contratto.cameriereId);
   const normalizedContract = { ...contratto, tipo: cleanText(contratto.tipo) };
   const pkg = packageForRestaurantAndRequest(contratto.ristoranteId, { tipo: normalizedContract.tipo, qualifiche: cameriere.qualifiche });
-  const compliance = buildPairMetrics(contratto.cameriereId, contratto.ristoranteId);
+  // ⚡ Bolt Optimization: Pass preloaded worker
+  const compliance = buildPairMetrics(contratto.cameriereId, contratto.ristoranteId, cameriere);
 
   return {
     contratto: normalizedContract,
@@ -536,8 +570,9 @@ function getRestaurantPayments(restaurantId) {
 function getAdminAlerts() {
   const generated = Object.keys(pairOverrides).map(key => {
     const [workerId, restaurantId] = key.split(':').map(Number);
-    const metrics = buildPairMetrics(workerId, restaurantId);
     const worker = getEnhancedWorker(workerId);
+    // ⚡ Bolt Optimization: Pass pre-loaded worker to avoid redundant O(N) array lookups and heavy cleanText calls
+    const metrics = buildPairMetrics(workerId, restaurantId, worker);
     const restaurant = getEnhancedRestaurant(restaurantId);
     return {
       id: `cmp_${workerId}_${restaurantId}`,
