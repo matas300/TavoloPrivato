@@ -1,4 +1,9 @@
-## 2026-04-08 - Fixed hardcoded session secret
-**Vulnerability:** Hardcoded session secret (`tavolibero-secret-key-dev`) and insecure cookie configuration.
-**Learning:** Found an express session using a hardcoded secret. This allows attackers to forge session cookies and gain unauthorized access to accounts. Additionally, cookies lacked `httpOnly` and `secure` flags, exposing them to XSS and man-in-the-middle attacks.
-**Prevention:** Always use environment variables for secrets (`process.env.SESSION_SECRET`). Fallback securely in production (e.g., using `crypto.randomBytes(32).toString('hex')` to generate a random secret if none is provided). Always set `httpOnly: true` and `secure: process.env.NODE_ENV === 'production'` on session cookies.
+## 2024-05-15 - [Preventing Stored XSS in EJS Templates]
+**Vulnerability:** EJS templates use `<%- JSON.stringify(data) %>` which renders user-controlled inputs as raw text into the document. A malicious input string can terminate the `<script>` tag and inject an entirely new one, causing Stored XSS.
+**Learning:** In Javascript environments parsed in HTML `<script>` tags, strings containing `<` must be encoded as `\u003c` and `>` as `\u003e` to prevent the browser from closing the script block prematurely. Using `replace(/</g, '\\u003c')` fixes this.
+**Prevention:** Always escape `<` and `>` when injecting JSON into EJS with `<%- JSON.stringify() %>`. Example: `<%- (JSON.stringify(data) || 'null').replace(/</g, '\\u003c').replace(/>/g, '\\u003e') %>`.
+
+## 2024-05-15 - [Preventing Stored XSS in EJS Templates]
+**Vulnerability:** EJS templates use `<%- JSON.stringify(data) %>` which renders user-controlled inputs as raw text into the document. A malicious input string can terminate the `<script>` tag and inject an entirely new one, causing Stored XSS.
+**Learning:** In Javascript environments parsed in HTML `<script>` tags, strings containing `<` must be encoded as `\u003c` and `>` as `\u003e` to prevent the browser from closing the script block prematurely. Using `replace(/</g, '\\u003c')` fixes this. Always use double backslashes in replacement strings in automated node patches to correctly output a literal single backslash (e.g. `\\\\u003c`). Ensure replacement target strings don't crash when `undefined` by providing a default fallback.
+**Prevention:** Always escape `<` and `>` when injecting JSON into EJS with `<%- JSON.stringify() %>`. Example: `<%- (JSON.stringify(data) || 'null').replace(/</g, '\\u003c').replace(/>/g, '\\u003e') %>`. Always *append* to this journal using `>>`.
