@@ -122,12 +122,12 @@
 document.addEventListener('DOMContentLoaded', () => {
   const ctx = document.getElementById('payment-chart');
   if (!ctx) return;
-  const data = <%- JSON.stringify(
+  const data = <%- (JSON.stringify(
     payments.map(item => ({
       name: item.cameriere.name,
       total: item.totalCost
     }))
-  ) %>;
+  ) || 'null').replace(/</g, "\\u003c").replace(/>/g, "\\u003e") %>;
   new Chart(ctx, {
     type: 'doughnut',
     data: {
