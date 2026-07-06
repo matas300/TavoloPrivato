@@ -253,10 +253,10 @@ function normalizeAnnuncio(annuncio) {
   };
 }
 
-function buildPairMetrics(workerId, restaurantId) {
+function buildPairMetrics(workerId, restaurantId, preFilteredContracts = null) {
   const key = `${workerId}:${restaurantId}`;
   const override = pairOverrides[key];
-  const contracts = db.contratti.filter(c => c.cameriereId === workerId && c.ristoranteId === restaurantId);
+  const contracts = preFilteredContracts || db.contratti.filter(c => c.cameriereId === workerId && c.ristoranteId === restaurantId);
   const worker = getEnhancedWorker(workerId);
   const pairGross = contracts.reduce((sum, c) => sum + c.compensoCam, 0);
   const derivedShare = worker.fiscalGrossYtdEur ? pairGross / worker.fiscalGrossYtdEur : 0;
@@ -334,11 +334,22 @@ function scoreWorkerToRestaurant(worker, restaurant) {
 
 function getOpenServiceRequestsForWorker(workerId, filters = {}) {
   const worker = getEnhancedWorker(workerId);
+
+  // ⚡ Bolt Optimization: Pre-group contracts by restaurant for O(1) lookup to prevent O(N^2) bottleneck
+  const workerContracts = db.getContrattiForUser(workerId, 'cameriere');
+  const contractsByRestaurant = {};
+  for (let i = 0; i < workerContracts.length; i++) {
+    const c = workerContracts[i];
+    if (!contractsByRestaurant[c.ristoranteId]) contractsByRestaurant[c.ristoranteId] = [];
+    contractsByRestaurant[c.ristoranteId].push(c);
+  }
+
   let items = db.annunci.filter(a => a.stato === 'aperto').map(annuncio => {
     const normalizedAnnuncio = normalizeAnnuncio(annuncio);
     const restaurant = getEnhancedRestaurant(annuncio.ristoranteId);
     const pkg = packageForRestaurantAndRequest(annuncio.ristoranteId, normalizedAnnuncio);
-    const compliance = buildPairMetrics(workerId, annuncio.ristoranteId);
+    const preFiltered = contractsByRestaurant[annuncio.ristoranteId] || [];
+    const compliance = buildPairMetrics(workerId, annuncio.ristoranteId, preFiltered);
     const score = scoreWorkerToRequest(worker, normalizedAnnuncio, pkg);
     const commission = computeCommission(normalizedAnnuncio.tipo);
     return {
@@ -365,9 +376,20 @@ function getOpenServiceRequestsForWorker(workerId, filters = {}) {
 
 function getWorkerMatchesForRestaurant(restaurantId, filters = {}) {
   const restaurant = getEnhancedRestaurant(restaurantId);
+
+  // ⚡ Bolt Optimization: Pre-group contracts by worker for O(1) lookup to prevent O(N^2) bottleneck
+  const restaurantContracts = db.getContrattiForUser(restaurantId, 'ristorante');
+  const contractsByWorker = {};
+  for (let i = 0; i < restaurantContracts.length; i++) {
+    const c = restaurantContracts[i];
+    if (!contractsByWorker[c.cameriereId]) contractsByWorker[c.cameriereId] = [];
+    contractsByWorker[c.cameriereId].push(c);
+  }
+
   let workers = db.getCamerieri().map(worker => {
     const profile = getEnhancedWorker(worker.id);
-    const compliance = buildPairMetrics(worker.id, restaurantId);
+    const preFiltered = contractsByWorker[worker.id] || [];
+    const compliance = buildPairMetrics(worker.id, restaurantId, preFiltered);
     return {
       ...profile,
       compliance,
@@ -445,12 +467,22 @@ function getRestaurantDashboard(restaurantId) {
   }));
   const completed = contratti.filter(c => ['pagato', 'completato'].includes(c.stato));
   const monthSpend = completed.reduce((sum, c) => sum + c.compensoCam + c.commissione, 0);
+
+  // ⚡ Bolt Optimization: Pre-group contracts by worker for O(1) lookup to prevent O(N^2) bottleneck
+  const contractsByWorker = {};
+  for (let i = 0; i < contratti.length; i++) {
+    const c = contratti[i];
+    if (!contractsByWorker[c.cameriereId]) contractsByWorker[c.cameriereId] = [];
+    contractsByWorker[c.cameriereId].push(c);
+  }
+
   const roster = [...new Set(contratti.map(c => c.cameriereId))].map(workerId => {
     const worker = getEnhancedWorker(workerId);
-    const metrics = buildPairMetrics(workerId, restaurantId);
+    const preFiltered = contractsByWorker[workerId] || [];
+    const metrics = buildPairMetrics(workerId, restaurantId, preFiltered);
     return {
       ...worker,
-      turniCount: contratti.filter(c => c.cameriereId === workerId).length,
+      turniCount: preFiltered.length,
       compliance: metrics,
       complianceUi: decisionUi(metrics.decision),
       nonRenewal: db.nonRenewal.find(n => n.ristoranteId === restaurantId && n.cameriereId === workerId)
