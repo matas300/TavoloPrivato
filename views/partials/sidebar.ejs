@@ -65,4 +65,4 @@ if (role === 'cameriere') {
     </button>
   </div>
 </aside>
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()" role="button" tabindex="0" aria-label="Chiudi menu" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();closeSidebar();}"></div>
